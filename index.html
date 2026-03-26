@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINK Building 18F &amp; 19F — Lease Analysis Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+@font-face {
+  font-family: 'Metropolis';
+  src: local('Metropolis');
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Metropolis',Arial,sans-serif;background:#F3F5F8;color:#10131A;line-height:1.5;-webkit-font-smoothing:antialiased;}
+.container{max-width:1280px;margin:0 auto;padding:0 24px;}
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:24px;margin-bottom:24px;}
+.section-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.section-accent{width:60px;height:3px;background:linear-gradient(90deg,#FFA200,#FFD400);margin-bottom:20px;border-radius:2px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+@media(max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+/* HEADER */
+.header{background:#10131A;color:#fff;padding:20px 0 16px 0;}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.logo-area{display:inline-flex;align-items:baseline;gap:2px;}
+.logo-trev{background:#FFD03F;color:#10131A;font-weight:800;font-size:18px;padding:2px 7px;border-radius:5px;letter-spacing:.5px;line-height:1.2;}
+.logo-olution{color:#fff;font-weight:800;font-size:18px;line-height:1.2;}
+.logo-sep{color:#9DA0A6;margin:0 10px;font-size:14px;}
+.logo-group{color:#9DA0A6;font-size:13px;}
+.header h1{font-size:22px;font-weight:700;margin:10px 0 2px 0;color:#fff;}
+.header-sub{font-size:13px;color:#9DA0A6;margin-bottom:10px;}
+.header-right{text-align:right;}
+.header-date{font-size:14px;color:#fff;margin-bottom:6px;}
+.badge-orange{background:#FFA200;color:#10131A;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;display:inline-block;}
+.header-conf{font-size:10px;color:#9DA0A6;margin-top:8px;}
+.header-brand{font-size:10px;color:#FFA200;font-weight:600;}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 32px;font-size:11px;color:#9DA0A6;padding:8px 0 14px 0;}
+.team-grid span{color:#FFD03F;font-weight:600;}
+.header-accent{height:3px;background:linear-gradient(90deg,#FFA200,#FFD400);}
+
+/* KPI */
+.kpi-card{text-align:center;padding:24px;min-height:140px;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.kpi-big{font-size:26px;font-weight:800;line-height:1.2;}
+.kpi-sub{font-size:13px;color:#9DA0A6;margin-top:4px;}
+.kpi-red{color:#E53935;}
+.kpi-label{font-size:13px;color:#9DA0A6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600;}
+
+/* TABLES */
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.data-table th{background:#F3F5F8;padding:8px 6px;text-align:right;font-weight:600;border-bottom:2px solid #e0e0e0;white-space:nowrap;}
+table.data-table th:first-child{text-align:left;}
+table.data-table td{padding:8px 6px;text-align:right;border-bottom:1px solid #eee;}
+table.data-table td:first-child{text-align:left;font-weight:600;}
+table.data-table tr:last-child{font-weight:700;background:#F3F5F8;}
+table.data-table tr:hover{background:#FFFDE7;}
+
+/* RISK MATRIX */
+.risk-matrix{display:grid;grid-template-columns:70px repeat(5,1fr);grid-template-rows:repeat(5,56px) 30px;gap:2px;font-size:11px;text-align:center;}
+.rm-cell{display:flex;align-items:center;justify-content:center;border-radius:4px;position:relative;flex-wrap:wrap;gap:3px;padding:4px;}
+.rm-green{background:#E8F5E9;}
+.rm-yellow{background:#FFF9C4;}
+.rm-orange{background:#FFE0B2;}
+.rm-red{background:#FFCDD2;}
+.rm-darkred{background:#EF9A9A;}
+.rm-label-y{font-weight:600;font-size:10px;color:#9DA0A6;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;text-align:right;line-height:1.2;}
+.rm-label-x{font-weight:600;font-size:11px;color:#9DA0A6;}
+.rm-dot{width:20px;height:20px;border-radius:50%;color:#fff;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dot-critical{background:#D32F2F;}
+.dot-high{background:#F57C00;}
+.dot-medium{background:#FBC02D;}
+.dot-low{background:#4CAF50;}
+
+/* TIMELINE */
+.timeline{display:flex;align-items:flex-start;justify-content:space-between;position:relative;padding:30px 0 10px 0;}
+.timeline::before{content:'';position:absolute;top:38px;left:0;right:0;height:3px;background:#e0e0e0;}
+.tl-item{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;flex:1;}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:#10131A;margin-bottom:8px;}
+.tl-dot.amber{background:#FFA200;}
+.tl-dot.red{background:#E53935;}
+.tl-label{font-size:12px;font-weight:600;text-align:center;}
+.tl-desc{font-size:11px;color:#9DA0A6;text-align:center;}
+
+/* NEGOTIATION */
+.pri-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;display:inline-block;text-transform:uppercase;}
+.pri-critical{background:#FFCDD2;color:#C62828;}
+.pri-high{background:#FFE0B2;color:#E65100;}
+.pri-medium{background:#FFF9C4;color:#F57F17;}
+.pri-low{background:#E8F5E9;color:#2E7D32;}
+
+/* STRENGTH / CONCERN */
+.strength-card{border-left:4px solid #4CAF50;background:#F1F8E9;}
+.concern-card{border-left:4px solid #E53935;background:#FFF3F0;}
+.sc-item{padding:10px 0;font-size:13px;border-bottom:1px solid rgba(0,0,0,.06);}
+.sc-item:last-child{border:none;}
+
+/* COMMENTS */
+.filter-btn{padding:5px 14px;border:1px solid #e0e0e0;background:#fff;border-radius:4px;font-size:12px;cursor:pointer;font-weight:600;margin-right:4px;margin-bottom:8px;}
+.filter-btn.active{background:#10131A;color:#FFD03F;border-color:#10131A;}
+
+/* CALCULATORS */
+.dark-card{background:#10131A;color:#fff;border-radius:8px;padding:24px;margin-bottom:24px;border-top:4px solid #FFD03F;}
+.dark-card table{width:100%;border-collapse:collapse;font-size:13px;}
+.dark-card th{padding:8px 6px;text-align:right;color:#9DA0A6;border-bottom:1px solid #333;font-weight:600;white-space:nowrap;}
+.dark-card th:first-child{text-align:left;}
+.dark-card td{padding:6px;text-align:right;border-bottom:1px solid #222;white-space:nowrap;}
+.dark-card td:first-child{text-align:left;color:#FFD03F;font-weight:600;}
+.dark-card input[type=number]{width:100px;background:#1a1d26;border:1px solid #444;color:#fff;padding:5px 6px;border-radius:4px;text-align:right;font-size:13px;}
+.dark-card input[type=number]:focus{border-color:#FFD03F;outline:none;}
+.calc-btn{background:linear-gradient(90deg,#FFA200,#FFD400);color:#10131A;border:none;padding:10px 28px;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;margin:12px 0;}
+.calc-btn:hover{opacity:.9;}
+.toggle-btn{background:#333;color:#FFD03F;border:1px solid #FFD03F;padding:5px 16px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:12px;}
+.toggle-btn:hover{background:#FFD03F;color:#10131A;}
+
+.roi-circle{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:100px;height:100px;border-radius:50%;border:3px solid #FFD03F;margin:8px;text-align:center;}
+.roi-circle .val{font-size:18px;font-weight:800;color:#FFD03F;}
+.roi-circle .lbl{font-size:9px;color:#9DA0A6;}
+
+/* SCENARIO CARDS */
+.esc-card{background:#1a1d26;border-radius:6px;padding:14px;text-align:center;}
+.esc-card .esc-title{font-size:12px;color:#FFD03F;font-weight:600;margin-bottom:4px;}
+.esc-card .esc-val{font-size:18px;font-weight:800;color:#fff;}
+.esc-card .esc-sub{font-size:10px;color:#9DA0A6;margin-top:2px;}
+.slider-wrap{margin:16px 0;}
+.slider-wrap input[type=range]{width:100%;accent-color:#FFD03F;}
+
+/* ADVISORY */
+.adv-card{border-top:3px solid;padding:16px;}
+.adv-card h4{font-size:14px;margin-bottom:6px;}
+.adv-card p{font-size:12px;color:#666;}
+
+/* FOOTER */
+.footer-accent{height:3px;background:linear-gradient(90deg,#FFA200,#FFD400);}
+.footer{background:#10131A;color:#9DA0A6;padding:20px 0;font-size:12px;}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+
+canvas{max-width:100%;width:100%!important;}
+</style>
+</head>
+<body>
+
+<!-- ===== SECTION 1: HEADER ===== -->
+<div class="header">
+<div class="container">
+<div class="header-top">
+<div>
+<div class="logo-area">
+<span class="logo-trev">TrEv</span><span class="logo-olution">olution</span><span class="logo-sep">|</span><span class="logo-group">Dyninno Group</span>
+</div>
+<h1>LINK Building 18F &amp; 19F — Lease Analysis</h1>
+<div class="header-sub">Innoland Development Corp. &gt; Dyninno Philippines Inc. | Cebu IT Park, Cebu City</div>
+</div>
+<div class="header-right">
+<div class="header-date">March 2026</div>
+<span class="badge-orange">PRE-SIGNING REVIEW</span>
+<div class="header-brand" style="margin-top:10px;">DYNINNO Philippines</div>
+<div class="header-conf">Internal &amp; Confidential</div>
+<div style="color:#fff;font-size:11px;margin-top:6px;">Analysis by Art&#363;rs Z&#257;l&#299;tis | PgM</div>
+</div>
+</div>
+<div class="team-grid">
+<div><span>Legal:</span> Queenie Chariz Malicay</div>
+<div><span>Finance:</span> CFO Office</div>
+<div><span>Operations:</span> PH Country Management</div>
+<div><span>Real Estate:</span> Facilities &amp; PM</div>
+<div><span>Compliance:</span> Legal &amp; Regulatory</div>
+<div><span>Strategy:</span> Corporate Development</div>
+</div>
+</div>
+</div>
+<div class="header-accent"></div>
+
+<div class="container" style="padding-top:24px;">
+
+<!-- ===== SECTION 2: KPI TILES ===== -->
+<div class="grid-4" style="margin-bottom:24px;">
+<div class="card kpi-card">
+<div class="kpi-label">Total Area</div>
+<div class="kpi-big">2,273.56 sqm</div>
+<div class="kpi-sub">24,473 sqft</div>
+</div>
+<div class="card kpi-card">
+<div class="kpi-label">Lease Term</div>
+<div class="kpi-big">5 Years</div>
+<div class="kpi-sub">Jul 2026 – Jun 2031</div>
+<div style="color:#E53935;font-size:11px;font-weight:600;margin-top:4px;">No Pre-Termination</div>
+</div>
+<div class="card kpi-card">
+<div class="kpi-label">5-Year Cost</div>
+<div class="kpi-big">₱130.1M</div>
+<div class="kpi-sub">$2.32M USD</div>
+</div>
+<div class="card kpi-card">
+<div class="kpi-label">Risk Score</div>
+<div class="kpi-big kpi-red">CRITICAL</div>
+<div class="kpi-sub">8 Critical, 7 High, 8 Medium</div>
+</div>
+</div>
+
+<!-- ===== SECTION 3: FINANCIAL OVERVIEW ===== -->
+<div class="section-title">Financial Overview</div>
+<div class="section-accent"></div>
+<div class="grid-2" style="margin-bottom:24px;">
+<div class="card" style="overflow-x:auto;">
+<table class="data-table">
+<thead>
+<tr><th>Year</th><th>Rent ₱/mo</th><th>CUSA ₱/mo</th><th>Park ₱/mo</th><th>Total ₱/mo</th><th>Total $/mo</th><th>Annual ₱</th><th>Annual $</th></tr>
+</thead>
+<tbody>
+<tr><td>Y1</td><td>1,705,170</td><td>329,566</td><td>27,500</td><td>2,062,236</td><td>36,825</td><td>24,746,832</td><td>441,908</td></tr>
+<tr><td>Y2</td><td>1,790,429</td><td>339,453</td><td>27,500</td><td>2,157,382</td><td>38,525</td><td>25,888,580</td><td>462,296</td></tr>
+<tr><td>Y3</td><td>1,790,429</td><td>349,637</td><td>27,500</td><td>2,167,566</td><td>38,706</td><td>26,010,792</td><td>464,478</td></tr>
+<tr><td>Y4</td><td>1,790,429</td><td>360,126</td><td>27,500</td><td>2,178,055</td><td>38,894</td><td>26,136,660</td><td>466,726</td></tr>
+<tr><td>Y5</td><td>1,879,950</td><td>370,930</td><td>27,500</td><td>2,278,380</td><td>40,685</td><td>27,340,560</td><td>488,224</td></tr>
+<tr><td>Total</td><td></td><td></td><td></td><td></td><td></td><td>130,123,424</td><td>2,323,632</td></tr>
+</tbody>
+</table>
+</div>
+<div class="card" style="display:flex;align-items:center;justify-content:center;">
+<canvas id="cvDonut" style="max-height:260px;"></canvas>
+</div>
+</div>
+
+<!-- ===== SECTION 4: MONTHLY COST TREND ===== -->
+<div class="section-title">Monthly Cost Trend (60 Months)</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;">
+<canvas id="cvMonthly" height="140"></canvas>
+</div>
+
+<!-- ===== SECTION 5: RENT BENCHMARKING ===== -->
+<div class="section-title">Rent Benchmarking</div>
+<div class="section-accent"></div>
+<div class="grid-2" style="margin-bottom:24px;">
+<div class="card">
+<canvas id="cvBenchmark" height="150"></canvas>
+</div>
+<div class="card">
+<h3 style="font-size:15px;margin-bottom:12px;">Key Metrics</h3>
+<ul style="font-size:13px;line-height:2;padding-left:18px;color:#444;">
+<li><strong>Base Rent:</strong> ₱750/sqm/mo — within market range (₱500–₱900)</li>
+<li><strong>CUSA:</strong> ₱145/sqm/mo — at market mid (₱100–₱180)</li>
+<li><strong>Parking:</strong> ₱2,500/slot/mo — below market mid (₱3,000)</li>
+<li><strong>Escalation:</strong> 5% every 2 years — standard for Cebu IT Park</li>
+<li><strong>Fit-out Period:</strong> Not specified — needs negotiation</li>
+<li><strong>Rent-Free Period:</strong> Not included — industry norm is 1-3 months</li>
+</ul>
+</div>
+</div>
+
+<!-- ===== SECTION 6: RISK MATRIX ===== -->
+<div class="section-title">Risk Matrix (24 Identified Risks)</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;overflow-x:auto;">
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
+<span style="font-size:11px;font-weight:600;">Legend:</span>
+<span><span class="rm-dot dot-critical" style="display:inline-flex;width:14px;height:14px;font-size:7px;">C</span> Critical</span>
+<span><span class="rm-dot dot-high" style="display:inline-flex;width:14px;height:14px;font-size:7px;">H</span> High</span>
+<span><span class="rm-dot dot-medium" style="display:inline-flex;width:14px;height:14px;font-size:7px;">M</span> Medium</span>
+<span><span class="rm-dot dot-low" style="display:inline-flex;width:14px;height:14px;font-size:7px;">L</span> Low</span>
+</div>
+<div style="display:flex;gap:8px;">
+<div style="writing-mode:vertical-lr;transform:rotate(180deg);font-weight:600;font-size:11px;color:#9DA0A6;display:flex;align-items:center;justify-content:center;padding:0 4px;">IMPACT &rarr;</div>
+<div style="flex:1;">
+<div class="risk-matrix" id="riskMatrixGrid"></div>
+<div style="text-align:center;font-weight:600;font-size:11px;color:#9DA0A6;margin-top:4px;">LIKELIHOOD &rarr;</div>
+</div>
+</div>
+<div style="margin-top:24px;">
+<h4 style="font-size:15px;margin-bottom:12px;">Top 5 Risks</h4>
+<div class="grid-3" style="grid-template-columns:repeat(5,1fr);gap:16px;">
+<div class="card" style="padding:12px;border-left:3px solid #D32F2F;">
+<div style="font-size:11px;font-weight:700;color:#D32F2F;">R1 — CRITICAL</div>
+<div style="font-size:12px;margin-top:4px;">No break clause — full 5yr commitment</div>
+</div>
+<div class="card" style="padding:12px;border-left:3px solid #D32F2F;">
+<div style="font-size:11px;font-weight:700;color:#D32F2F;">R2 — CRITICAL</div>
+<div style="font-size:12px;margin-top:4px;">Solidary liability across group</div>
+</div>
+<div class="card" style="padding:12px;border-left:3px solid #D32F2F;">
+<div style="font-size:11px;font-weight:700;color:#D32F2F;">R5 — CRITICAL</div>
+<div style="font-size:12px;margin-top:4px;">Lien on all tenant movables</div>
+</div>
+<div class="card" style="padding:12px;border-left:3px solid #D32F2F;">
+<div style="font-size:11px;font-weight:700;color:#D32F2F;">R4 — CRITICAL</div>
+<div style="font-size:12px;margin-top:4px;">Abandonment = full unexpired rent</div>
+</div>
+<div class="card" style="padding:12px;border-left:3px solid #D32F2F;">
+<div style="font-size:11px;font-weight:700;color:#D32F2F;">R11 — CRITICAL</div>
+<div style="font-size:12px;margin-top:4px;">No pandemic force majeure</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== SECTION 7: RISK EXPOSURE ===== -->
+<div class="section-title">Risk Exposure by Year (₱ Millions)</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;">
+<canvas id="cvRiskExposure" height="140"></canvas>
+</div>
+
+<!-- ===== SECTION 8: KEY DATES TIMELINE ===== -->
+<div class="section-title">Key Dates Timeline</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;overflow-x:auto;">
+<div class="timeline">
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Jul 2026</div><div class="tl-desc">Lease Start</div></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Jul 2027</div><div class="tl-desc">+5% Escalation</div></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Jul 2028</div><div class="tl-desc">Year 3</div></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Jul 2029</div><div class="tl-desc">Year 4</div></div>
+<div class="tl-item"><div class="tl-dot amber"></div><div class="tl-label" style="color:#FFA200;">Dec 2030</div><div class="tl-desc">Renewal Notice</div></div>
+<div class="tl-item"><div class="tl-dot"></div><div class="tl-label">Jul 2030</div><div class="tl-desc">+5% Escalation</div></div>
+<div class="tl-item"><div class="tl-dot red"></div><div class="tl-label" style="color:#E53935;">Jun 2031</div><div class="tl-desc">Lease Expiry</div></div>
+</div>
+</div>
+
+<!-- ===== SECTION 9: DEPOSITS ===== -->
+<div class="section-title">Security Deposits &amp; Advance Rent</div>
+<div class="section-accent"></div>
+<div class="grid-2" style="margin-bottom:24px;">
+<div class="card" style="overflow-x:auto;">
+<table class="data-table">
+<thead><tr><th>Item</th><th>₱ Amount</th><th>$ Amount</th></tr></thead>
+<tbody>
+<tr><td>Security Deposit (3 mo)</td><td>6,311,294</td><td>112,702</td></tr>
+<tr><td>Advance Rent (2 mo)</td><td>4,207,529</td><td>75,134</td></tr>
+<tr><td>Total Due at Signing</td><td>10,518,823</td><td>187,836</td></tr>
+</tbody>
+</table>
+</div>
+<div class="card">
+<h3 style="font-size:15px;margin-bottom:12px;">Cash Position Notes</h3>
+<ul style="font-size:13px;line-height:2;padding-left:18px;color:#444;">
+<li>₱10.5M (~$187.8K) required before occupancy</li>
+<li>SD held for full term, no interest earned</li>
+<li>SD adjusts with escalation — additional cash needed at Y3 &amp; Y5</li>
+<li>Advance rent applied to last 2 months of lease</li>
+<li>Total upfront = ~4.8 months of rent equivalent</li>
+</ul>
+</div>
+</div>
+
+<!-- ===== SECTION 10: NEGOTIATION PRIORITIES ===== -->
+<div class="section-title">Negotiation Priorities</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;overflow-x:auto;">
+<table class="data-table">
+<thead><tr><th>#</th><th>Item</th><th>Priority</th><th>Current</th><th>Target</th><th>Value at Risk</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Break clause</td><td><span class="pri-badge pri-critical">CRITICAL</span></td><td>None</td><td>3+2 years</td><td>₱50-90M reduction</td></tr>
+<tr><td>2</td><td>Mandatory cure period</td><td><span class="pri-badge pri-critical">CRITICAL</span></td><td>7d discretionary</td><td>30d mandatory</td><td>Prevents termination</td></tr>
+<tr><td>3</td><td>Limit lien scope</td><td><span class="pri-badge pri-critical">CRITICAL</span></td><td>All movables</td><td>Exclude IT equip.</td><td>₱15-35M</td></tr>
+<tr><td>4</td><td>Delete solidary liability</td><td><span class="pri-badge pri-critical">CRITICAL</span></td><td>Group = single obligor</td><td>Own liability only</td><td>₱130.6M</td></tr>
+<tr><td>5</td><td>Cap abandonment LD</td><td><span class="pri-badge pri-high">HIGH</span></td><td>Full unexpired rent</td><td>6 months</td><td>₱97M</td></tr>
+<tr><td>6</td><td>Pandemic force majeure</td><td><span class="pri-badge pri-high">HIGH</span></td><td>Excluded</td><td>Govt closures = FM</td><td>₱2.06M/mo</td></tr>
+<tr><td>7</td><td>Remove attorney-in-fact</td><td><span class="pri-badge pri-high">HIGH</span></td><td>Lessor acts unilaterally</td><td>Court order required</td><td>Constitutional right</td></tr>
+<tr><td>8</td><td>Reduce default interest</td><td><span class="pri-badge pri-high">HIGH</span></td><td>3%/mo (36% p.a.)</td><td>1%/mo (12% p.a.)</td><td>₱3.9M/yr exposure</td></tr>
+<tr><td>9</td><td>Improvement rights</td><td><span class="pri-badge pri-high">HIGH</span></td><td>All become Lessor's</td><td>Art 1678 election</td><td>₱5-20M</td></tr>
+<tr><td>10</td><td>Holdover rate</td><td><span class="pri-badge pri-medium">MEDIUM</span></td><td>150% penalty</td><td>110-120%</td><td>₱1M/mo savings</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ===== SECTION 11: STRENGTHS & CONCERNS ===== -->
+<div class="section-title">Strengths &amp; Concerns</div>
+<div class="section-accent"></div>
+<div class="grid-2" style="margin-bottom:24px;">
+<div class="card strength-card">
+<h3 style="font-size:15px;margin-bottom:10px;color:#2E7D32;">Strengths</h3>
+<div class="sc-item">Prime location in Cebu IT Park — talent pool access</div>
+<div class="sc-item">Grade A building with modern infrastructure &amp; facilities</div>
+<div class="sc-item">PEZA-accredited zone — tax incentives preserved</div>
+<div class="sc-item">Competitive base rent within market range</div>
+<div class="sc-item">Established landlord with institutional management</div>
+</div>
+<div class="card concern-card">
+<h3 style="font-size:15px;margin-bottom:10px;color:#C62828;">Concerns</h3>
+<div class="sc-item">No break clause — locked in for 60 months minimum</div>
+<div class="sc-item">Solidary liability exposes entire Dyninno group</div>
+<div class="sc-item">Lien on all movable property including IT assets</div>
+<div class="sc-item">Attorney-in-fact clause grants extrajudicial powers</div>
+<div class="sc-item">No pandemic/FM protection — full rent during shutdowns</div>
+</div>
+</div>
+
+<!-- ===== SECTION 12: COMMENTS TRACKER ===== -->
+<div class="section-title">Comments &amp; Review Tracker</div>
+<div class="section-accent"></div>
+<div class="card" style="margin-bottom:24px;">
+<div id="commentFilters" style="margin-bottom:16px;"></div>
+<div style="overflow-x:auto;">
+<table class="data-table" id="commentsTable">
+<thead><tr><th>#</th><th>Date</th><th>Summary</th><th>Category</th><th>Priority</th></tr></thead>
+<tbody id="commentsTbody"></tbody>
+</table>
+</div>
+</div>
+
+<!-- ===== SECTION 13: CALL CENTRE ROI CALCULATOR ===== -->
+<div class="section-title">Call Centre ROI Calculator</div>
+<div class="section-accent"></div>
+<div class="dark-card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+<h3 style="font-size:16px;color:#FFD03F;">Revenue vs. Lease Cost Model</h3>
+<button class="toggle-btn" id="roiCurBtn" onclick="toggleRoiCurrency()">Showing: USD</button>
+</div>
+<div style="overflow-x:auto;">
+<table id="roiInputTable">
+<thead>
+<tr><th style="text-align:left;">Metric</th><th>Y1</th><th>Y2</th><th>Y3</th><th>Y4</th><th>Y5</th></tr>
+</thead>
+<tbody>
+<tr><td>Seats</td>
+<td><input type="number" id="roi_seats_0" value="200"></td>
+<td><input type="number" id="roi_seats_1" value="250"></td>
+<td><input type="number" id="roi_seats_2" value="300"></td>
+<td><input type="number" id="roi_seats_3" value="330"></td>
+<td><input type="number" id="roi_seats_4" value="350"></td></tr>
+<tr><td>Rev/Seat/Mo ($)</td>
+<td><input type="number" id="roi_rev_0" value="1200"></td>
+<td><input type="number" id="roi_rev_1" value="1200"></td>
+<td><input type="number" id="roi_rev_2" value="1200"></td>
+<td><input type="number" id="roi_rev_3" value="1200"></td>
+<td><input type="number" id="roi_rev_4" value="1200"></td></tr>
+<tr><td>Utilization (%)</td>
+<td><input type="number" id="roi_util_0" value="85"></td>
+<td><input type="number" id="roi_util_1" value="88"></td>
+<td><input type="number" id="roi_util_2" value="90"></td>
+<td><input type="number" id="roi_util_3" value="92"></td>
+<td><input type="number" id="roi_util_4" value="95"></td></tr>
+<tr><td>Agent Salary/Mo ($)</td>
+<td><input type="number" id="roi_sal_0" value="450"></td>
+<td><input type="number" id="roi_sal_1" value="470"></td>
+<td><input type="number" id="roi_sal_2" value="490"></td>
+<td><input type="number" id="roi_sal_3" value="510"></td>
+<td><input type="number" id="roi_sal_4" value="530"></td></tr>
+<tr><td>IT/Seat/Mo ($)</td>
+<td><input type="number" id="roi_it_0" value="80"></td>
+<td><input type="number" id="roi_it_1" value="80"></td>
+<td><input type="number" id="roi_it_2" value="80"></td>
+<td><input type="number" id="roi_it_3" value="80"></td>
+<td><input type="number" id="roi_it_4" value="80"></td></tr>
+<tr><td>Other OpEx/Mo ($)</td>
+<td><input type="number" id="roi_opex_0" value="15000"></td>
+<td><input type="number" id="roi_opex_1" value="16000"></td>
+<td><input type="number" id="roi_opex_2" value="17000"></td>
+<td><input type="number" id="roi_opex_3" value="18000"></td>
+<td><input type="number" id="roi_opex_4" value="19000"></td></tr>
+<tr style="background:#1a1d26;"><td>Lease Cost/Yr</td>
+<td style="color:#FFD03F;">$441,908 / ₱24.7M</td>
+<td style="color:#FFD03F;">$462,296 / ₱25.9M</td>
+<td style="color:#FFD03F;">$464,478 / ₱26.0M</td>
+<td style="color:#FFD03F;">$466,726 / ₱26.1M</td>
+<td style="color:#FFD03F;">$488,224 / ₱27.3M</td></tr>
+</tbody>
+</table>
+</div>
+<button class="calc-btn" onclick="calcROI()">Calculate ROI</button>
+<div id="roiResults" style="margin-top:16px;"></div>
+<div style="margin-top:20px;">
+<canvas id="cvROI" height="150"></canvas>
+</div>
+</div>
+
+<!-- ===== SECTION 14: ESCALATION MODELER ===== -->
+<div class="section-title">Escalation Scenario Modeler</div>
+<div class="section-accent"></div>
+<div class="dark-card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+<h3 style="font-size:16px;color:#FFD03F;">Compare Escalation Scenarios <span style="font-size:11px;color:#9DA0A6;font-weight:400;">(rent only, excl. CUSA &amp; parking)</span></h3>
+<button class="toggle-btn" id="escCurBtn" onclick="toggleEscCurrency()">Showing: PHP</button>
+</div>
+<div id="escScenarioCards" class="grid-4" style="margin-bottom:16px;"></div>
+<div class="slider-wrap">
+<label style="font-size:12px;color:#9DA0A6;">Custom Annual Escalation: <strong id="sliderVal" style="color:#FFD03F;">3%</strong></label>
+<input type="range" id="escSlider" min="0" max="10" step="0.5" value="3" oninput="updateEsc()">
+</div>
+<canvas id="cvEsc" height="120"></canvas>
+</div>
+
+<!-- ===== SECTION 15: ADVISORY RECOMMENDATIONS ===== -->
+<div class="section-title">Advisory Recommendations</div>
+<div class="section-accent"></div>
+<div class="grid-3" style="margin-bottom:24px;">
+<div class="card adv-card" style="border-color:#D32F2F;">
+<h4>1. Negotiate Break Clause</h4>
+<p>Secure 3+2 structure with 6-month notice. Reduces maximum exposure by ₱50-90M and provides operational flexibility.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#D32F2F;">Risk Reduction: ₱50-90M</div>
+</div>
+<div class="card adv-card" style="border-color:#D32F2F;">
+<h4>2. Remove Solidary Liability</h4>
+<p>Delete group guarantee clause. Each entity should bear only its own obligations. Industry standard for BPO tenants.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#D32F2F;">Risk Reduction: ₱130.6M</div>
+</div>
+<div class="card adv-card" style="border-color:#D32F2F;">
+<h4>3. Limit Asset Lien</h4>
+<p>Exclude IT equipment, proprietary systems, and client data infrastructure from lien scope. Critical for operations continuity.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#F57C00;">Risk Reduction: ₱15-35M</div>
+</div>
+<div class="card adv-card" style="border-color:#F57C00;">
+<h4>4. Add Pandemic FM Clause</h4>
+<p>Include government-mandated closures as force majeure events with proportional rent abatement during restrictions.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#F57C00;">Risk Reduction: ₱2.06M/mo</div>
+</div>
+<div class="card adv-card" style="border-color:#F57C00;">
+<h4>5. Mandatory Cure Period</h4>
+<p>Replace discretionary 7-day cure with mandatory 30-day written notice before any default remedies can be pursued.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#F57C00;">Risk Reduction: Prevents wrongful termination</div>
+</div>
+<div class="card adv-card" style="border-color:#FBC02D;">
+<h4>6. Cap Holdover &amp; Interest</h4>
+<p>Reduce holdover from 150% to 110-120%, and default interest from 3%/mo to 1%/mo. Align with market norms.</p>
+<div style="margin-top:8px;font-size:11px;font-weight:600;color:#FBC02D;">Risk Reduction: ₱4.9M/yr</div>
+</div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ===== FOOTER ===== -->
+<div class="footer-accent"></div>
+<div class="footer">
+<div class="container">
+<div class="footer-inner">
+<div class="logo-area">
+<span class="logo-trev">TrEv</span><span class="logo-olution">olution</span>
+</div>
+<div>Dyninno Philippines Inc. — Internal &amp; Confidential</div>
+<div>March 2026</div>
+</div>
+</div>
+</div>
+
+<script>
+// === DATA ===
+var FX = 56;
+var rentPHP = [1705170, 1790429, 1790429, 1790429, 1879950];
+var cusaPHP = [329566, 339453, 349637, 360126, 370930];
+var parkPHP = 27500;
+var annualPHP = [24746832, 25888580, 26010792, 26136660, 27340560];
+var totalPHP = 130123424;
+var annualUSD = [441908, 462296, 464478, 466726, 488224];
+var totalUSD = 2323632;
+
+// === UTILITY ===
+function numFmt(n) {
+    if (n === null || n === undefined) return '';
+    return n.toLocaleString('en-US');
+}
+function numFmtM(n) {
+    if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (Math.abs(n) >= 1000) return (n / 1000).toFixed(0) + 'K';
+    return numFmt(Math.round(n));
+}
+
+// === SECTION 6: RISK MATRIX ===
+function buildRiskMatrix() {
+    var grid = document.getElementById('riskMatrixGrid');
+    if (!grid) return;
+    // Risk positions: [riskId, likelihood(1-5 col), impact(1-5 row from bottom), level]
+    var risks = [
+        ['R1',4,5,'critical'],['R2',4,4,'critical'],['R5',3,5,'critical'],['R4',3,5,'critical'],
+        ['R11',3,5,'critical'],['R15',4,4,'critical'],
+        ['R3',2,5,'high'],['R7',2,5,'high'],['R9',2,5,'high'],['R16',2,5,'high'],
+        ['R6',3,4,'high'],['R10',3,4,'high'],['R14',3,4,'high'],
+        ['R8',4,3,'medium'],['R12',3,3,'medium'],['R13',5,3,'medium'],['R17',2,4,'medium'],
+        ['R18',3,3,'medium'],['R23',3,3,'medium'],['R22',3,5,'medium'],['R24',1,4,'medium'],
+        ['R19',3,2,'low'],['R20',3,2,'low'],['R21',3,2,'low']
+    ];
+    // Color map for cells: [row from top][col] -> color class
+    // row 0 = impact 5 (top), row 4 = impact 1 (bottom)
+    // col 0 = likelihood 1 (left), col 4 = likelihood 5 (right)
+    var cellColors = [
+        ['rm-orange','rm-red','rm-darkred','rm-darkred','rm-darkred'],
+        ['rm-yellow','rm-orange','rm-red','rm-darkred','rm-darkred'],
+        ['rm-green','rm-yellow','rm-orange','rm-red','rm-red'],
+        ['rm-green','rm-green','rm-yellow','rm-orange','rm-red'],
+        ['rm-green','rm-green','rm-green','rm-yellow','rm-orange']
+    ];
+    var impactLabels = ['<strong>5</strong><br>Catastrophic','<strong>4</strong><br>Major','<strong>3</strong><br>Moderate','<strong>2</strong><br>Minor','<strong>1</strong><br>Negligible'];
+    var likLabels = ['1-Rare','2-Unlikely','3-Possible','4-Likely','5-Almost Certain'];
+    var html = '';
+    for (var row = 0; row < 5; row++) {
+        var impactVal = 5 - row;
+        html += '<div class="rm-label-y" style="grid-column:1;grid-row:' + (row + 1) + ';">' + impactLabels[row] + '</div>';
+        for (var col = 0; col < 5; col++) {
+            var likVal = col + 1;
+            var dotsHtml = '';
+            for (var r = 0; r < risks.length; r++) {
+                if (risks[r][1] === likVal && risks[r][2] === impactVal) {
+                    var cls = 'dot-' + risks[r][3];
+                    dotsHtml += '<span class="rm-dot ' + cls + '">' + risks[r][0] + '</span>';
+                }
+            }
+            html += '<div class="rm-cell ' + cellColors[row][col] + '" style="grid-column:' + (col + 2) + ';grid-row:' + (row + 1) + ';">' + dotsHtml + '</div>';
+        }
+    }
+    // Bottom labels
+    html += '<div style="grid-column:1;grid-row:6;"></div>';
+    for (var c = 0; c < 5; c++) {
+        html += '<div class="rm-label-x" style="grid-column:' + (c + 2) + ';grid-row:6;">' + likLabels[c] + '</div>';
+    }
+    grid.innerHTML = html;
+}
+
+// === SECTION 12: COMMENTS ===
+var commentsData = [
+    {n:1, date:'2026-03-01', summary:'No break clause found in lease — tenant locked for 60 months', cat:'Legal', pri:'CRITICAL'},
+    {n:2, date:'2026-03-01', summary:'Solidary liability clause binds all Dyninno group entities', cat:'Legal', pri:'CRITICAL'},
+    {n:3, date:'2026-03-02', summary:'Attorney-in-fact clause allows extrajudicial asset seizure', cat:'Legal', pri:'CRITICAL'},
+    {n:4, date:'2026-03-02', summary:'Abandonment triggers full unexpired rent as liquidated damages', cat:'Financial', pri:'CRITICAL'},
+    {n:5, date:'2026-03-03', summary:'Lien on all movable property incl. IT equipment & data infra', cat:'Operational', pri:'CRITICAL'},
+    {n:6, date:'2026-03-03', summary:'Default interest at 3%/month (36% p.a.) — usurious rate', cat:'Financial', pri:'CRITICAL'},
+    {n:7, date:'2026-03-04', summary:'No pandemic or epidemic force majeure protection', cat:'Legal', pri:'CRITICAL'},
+    {n:8, date:'2026-03-04', summary:'Cure period only 7 days and at lessor discretion', cat:'Legal', pri:'CRITICAL'},
+    {n:9, date:'2026-03-05', summary:'Holdover rate at 150% — above market standard 110-120%', cat:'Financial', pri:'HIGH'},
+    {n:10, date:'2026-03-05', summary:'All improvements become lessor property upon installation', cat:'Financial', pri:'HIGH'},
+    {n:11, date:'2026-03-06', summary:'No rent-free fit-out period included', cat:'Financial', pri:'HIGH'},
+    {n:12, date:'2026-03-06', summary:'Security deposit adjusts upward with escalation', cat:'Financial', pri:'HIGH'},
+    {n:13, date:'2026-03-07', summary:'Assignment/sublease requires lessor prior written consent', cat:'Operational', pri:'HIGH'},
+    {n:14, date:'2026-03-07', summary:'Lessor may terminate for "material breach" — undefined term', cat:'Legal', pri:'HIGH'},
+    {n:15, date:'2026-03-08', summary:'No cap on CUSA annual increases', cat:'Financial', pri:'HIGH'},
+    {n:16, date:'2026-03-08', summary:'CUSA escalation at ~3%/yr compounds to significant exposure', cat:'Financial', pri:'MEDIUM'},
+    {n:17, date:'2026-03-09', summary:'Building insurance adequacy not verified', cat:'Operational', pri:'MEDIUM'},
+    {n:18, date:'2026-03-09', summary:'BMS/infrastructure age and capacity unknown', cat:'Operational', pri:'MEDIUM'},
+    {n:19, date:'2026-03-10', summary:'Parking allocation may be insufficient for 350 seats', cat:'Operational', pri:'MEDIUM'},
+    {n:20, date:'2026-03-10', summary:'No signage rights specified for tenant', cat:'Strategic', pri:'MEDIUM'},
+    {n:21, date:'2026-03-11', summary:'Governing law is Philippine — dispute resolution in Cebu courts', cat:'Legal', pri:'MEDIUM'},
+    {n:22, date:'2026-03-11', summary:'No exclusivity clause for similar tenants on same floor', cat:'Strategic', pri:'MEDIUM'},
+    {n:23, date:'2026-03-12', summary:'Renewal terms not pre-agreed — market rate at expiry', cat:'Strategic', pri:'MEDIUM'},
+    {n:24, date:'2026-03-12', summary:'Generator and backup power SLA not defined', cat:'Operational', pri:'LOW'}
+];
+
+function renderComments(filter) {
+    var tbody = document.getElementById('commentsTbody');
+    if (!tbody) return;
+    var html = '';
+    for (var i = 0; i < commentsData.length; i++) {
+        var c = commentsData[i];
+        if (filter !== 'all' && c.pri.toLowerCase() !== filter.toLowerCase()) continue;
+        var priClass = 'pri-' + c.pri.toLowerCase();
+        html += '<tr><td>' + c.n + '</td><td>' + c.date + '</td><td style="text-align:left;font-weight:400;white-space:normal;">' + c.summary + '</td><td>' + c.cat + '</td><td><span class="pri-badge ' + priClass + '">' + c.pri + '</span></td></tr>';
+    }
+    tbody.innerHTML = html;
+    // Update filter buttons
+    var filters = ['all','critical','high','medium','low'];
+    var filtersDiv = document.getElementById('commentFilters');
+    if (filtersDiv) {
+        var bhtml = '';
+        for (var f = 0; f < filters.length; f++) {
+            var active = (filters[f].toLowerCase() === filter.toLowerCase()) ? ' active' : '';
+            bhtml += '<button class="filter-btn' + active + '" onclick="filterComments(\'' + filters[f] + '\')">' + filters[f].charAt(0).toUpperCase() + filters[f].slice(1) + '</button>';
+        }
+        filtersDiv.innerHTML = bhtml;
+    }
+}
+
+function filterComments(f) {
+    renderComments(f);
+}
+
+// === SECTION 13: ROI CALCULATOR ===
+var roiCurrency = 'USD';
+var roiChartInstance = null;
+
+function toggleRoiCurrency() {
+    roiCurrency = (roiCurrency === 'USD') ? 'PHP' : 'USD';
+    document.getElementById('roiCurBtn').textContent = 'Showing: ' + roiCurrency;
+    calcROI();
+}
+
+function calcROI() {
+    var seats = [], revPerSeat = [], util = [], salary = [], itCost = [], opex = [];
+    for (var i = 0; i < 5; i++) {
+        seats.push(parseFloat(document.getElementById('roi_seats_' + i).value) || 0);
+        revPerSeat.push(parseFloat(document.getElementById('roi_rev_' + i).value) || 0);
+        util.push((parseFloat(document.getElementById('roi_util_' + i).value) || 0) / 100);
+        salary.push(parseFloat(document.getElementById('roi_sal_' + i).value) || 0);
+        itCost.push(parseFloat(document.getElementById('roi_it_' + i).value) || 0);
+        opex.push(parseFloat(document.getElementById('roi_opex_' + i).value) || 0);
+    }
+
+    var mul = (roiCurrency === 'PHP') ? FX : 1;
+    var sym = (roiCurrency === 'PHP') ? '₱' : '$';
+
+    var revenues = [], totalCosts = [], leaseCosts = [], laborCosts = [], itCosts = [], opexCosts = [];
+    var rois = [], costPerSeats = [];
+
+    for (var y = 0; y < 5; y++) {
+        var annRev = seats[y] * revPerSeat[y] * util[y] * 12 * mul;
+        var annLabor = seats[y] * salary[y] * 12 * mul;
+        var annIT = seats[y] * itCost[y] * 12 * mul;
+        var annOpex = opex[y] * 12 * mul;
+        var annLease = (roiCurrency === 'PHP') ? annualPHP[y] : annualUSD[y];
+        var annTotalCost = annLabor + annIT + annOpex + annLease;
+        var roi = ((annRev - annTotalCost) / annTotalCost * 100);
+        var cps = annTotalCost / seats[y] / 12;
+
+        revenues.push(annRev);
+        totalCosts.push(annTotalCost);
+        leaseCosts.push(annLease);
+        laborCosts.push(annLabor);
+        itCosts.push(annIT);
+        opexCosts.push(annOpex);
+        rois.push(roi);
+        costPerSeats.push(cps);
+    }
+
+    // ROI circles
+    var resDiv = document.getElementById('roiResults');
+    var circlesHtml = '<div style="text-align:center;margin-bottom:16px;">';
+    for (var y = 0; y < 5; y++) {
+        circlesHtml += '<div class="roi-circle"><span class="val">' + rois[y].toFixed(1) + '%</span><span class="lbl">Y' + (y + 1) + ' ROI</span></div>';
+    }
+    circlesHtml += '</div>';
+
+    // Results table
+    circlesHtml += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="color:#9DA0A6;border-bottom:1px solid #333;"><th style="text-align:left;padding:6px;">Metric</th>';
+    for (var y = 0; y < 5; y++) circlesHtml += '<th style="text-align:right;padding:6px;">Y' + (y + 1) + '</th>';
+    circlesHtml += '</tr></thead><tbody>';
+
+    var rows = [
+        {label: 'Revenue', data: revenues},
+        {label: 'Labor Cost', data: laborCosts},
+        {label: 'IT Cost', data: itCosts},
+        {label: 'Other OpEx', data: opexCosts},
+        {label: 'Lease Cost', data: leaseCosts},
+        {label: 'Total Cost', data: totalCosts},
+        {label: 'Net Profit', data: []},
+        {label: 'Cost/Seat/Mo', data: costPerSeats}
+    ];
+    for (var y = 0; y < 5; y++) rows[6].data.push(revenues[y] - totalCosts[y]);
+
+    for (var r = 0; r < rows.length; r++) {
+        var color = (r === 6) ? '#4CAF50' : '#fff';
+        if (r === 5) color = '#FFD03F';
+        circlesHtml += '<tr style="border-bottom:1px solid #222;"><td style="text-align:left;padding:6px;color:#FFD03F;font-weight:600;">' + rows[r].label + '</td>';
+        for (var y = 0; y < 5; y++) {
+            circlesHtml += '<td style="text-align:right;padding:6px;color:' + color + ';">' + sym + numFmt(Math.round(rows[r].data[y])) + '</td>';
+        }
+        circlesHtml += '</tr>';
+    }
+    circlesHtml += '</tbody></table></div>';
+    resDiv.innerHTML = circlesHtml;
+
+    // Chart
+    var ctx = document.getElementById('cvROI').getContext('2d');
+    if (roiChartInstance) roiChartInstance.destroy();
+    roiChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Y1','Y2','Y3','Y4','Y5'],
+            datasets: [
+                {label: 'Revenue (' + sym + ')', data: revenues, backgroundColor: '#4CAF50'},
+                {label: 'Total Cost (' + sym + ')', data: totalCosts, backgroundColor: '#E53935'},
+                {label: 'Lease Cost (' + sym + ')', data: leaseCosts, backgroundColor: '#FFD03F'}
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {legend: {labels: {color: '#9DA0A6'}}, title: {display: true, text: 'Revenue vs Cost Comparison (' + roiCurrency + ')', color: '#FFD03F'}},
+            scales: {
+                x: {ticks: {color: '#9DA0A6'}, grid: {color: '#222'}},
+                y: {ticks: {color: '#9DA0A6', callback: function(v) { return sym + numFmtM(v); }}, grid: {color: '#222'}}
+            }
+        }
+    });
+}
+
+// === SECTION 14: ESCALATION MODELER ===
+var escCurrency = 'PHP';
+var escChartInstance = null;
+
+function toggleEscCurrency() {
+    escCurrency = (escCurrency === 'PHP') ? 'USD' : 'PHP';
+    document.getElementById('escCurBtn').textContent = 'Showing: ' + escCurrency;
+    updateEsc();
+}
+
+function calcEscTotal(rates) {
+    var baseMonthly = 1705170; // PHP
+    var yearly = [];
+    var current = baseMonthly;
+    for (var y = 0; y < 5; y++) {
+        if (y > 0) current = current * (1 + rates[y - 1]);
+        yearly.push(current * 12);
+    }
+    return yearly;
+}
+
+function getYearlyData(rates) {
+    var data = calcEscTotal(rates);
+    if (escCurrency === 'USD') {
+        for (var i = 0; i < data.length; i++) data[i] = data[i] / FX;
+    }
+    return data;
+}
+
+function updateEsc() {
+    var sliderVal = parseFloat(document.getElementById('escSlider').value);
+    document.getElementById('sliderVal').textContent = sliderVal + '%';
+
+    var scenarios = [
+        {name: 'Actual (Contract)', rates: [0.05, 0, 0, 0.05], color: '#E53935'},
+        {name: '0% Flat', rates: [0, 0, 0, 0], color: '#4CAF50'},
+        {name: '3% Annual', rates: [0.03, 0.03, 0.03, 0.03], color: '#2196F3'},
+        {name: '5% Annual', rates: [0.05, 0.05, 0.05, 0.05], color: '#F57C00'},
+        {name: 'Custom (' + sliderVal + '%)', rates: [sliderVal/100, sliderVal/100, sliderVal/100, sliderVal/100], color: '#9C27B0'}
+    ];
+
+    var sym = (escCurrency === 'PHP') ? '₱' : '$';
+
+    // Scenario cards
+    var cardsDiv = document.getElementById('escScenarioCards');
+    var cardsHtml = '';
+    for (var s = 0; s < 4; s++) {
+        var data = getYearlyData(scenarios[s].rates);
+        var total = 0;
+        for (var i = 0; i < data.length; i++) total += data[i];
+        cardsHtml += '<div class="esc-card"><div class="esc-title">' + scenarios[s].name + '</div><div class="esc-val">' + sym + numFmtM(total) + '</div><div class="esc-sub">5-Year Total (Rent Only)</div></div>';
+    }
+    cardsDiv.innerHTML = cardsHtml;
+
+    renderEscChart(scenarios);
+}
+
+function renderEscChart(scenarios) {
+    var sym = (escCurrency === 'PHP') ? '₱' : '$';
+    var datasets = [];
+    for (var s = 0; s < scenarios.length; s++) {
+        var data = getYearlyData(scenarios[s].rates);
+        datasets.push({
+            label: scenarios[s].name,
+            data: data,
+            backgroundColor: scenarios[s].color,
+            borderColor: scenarios[s].color,
+            borderWidth: 1
+        });
+    }
+    var ctx = document.getElementById('cvEsc').getContext('2d');
+    if (escChartInstance) escChartInstance.destroy();
+    escChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: ['Y1','Y2','Y3','Y4','Y5'], datasets: datasets },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {labels: {color: '#9DA0A6'}},
+                title: {display: true, text: 'Escalation Scenarios — Annual Rent (' + escCurrency + ')', color: '#FFD03F'}
+            },
+            scales: {
+                x: {ticks: {color: '#9DA0A6'}, grid: {color: '#222'}},
+                y: {ticks: {color: '#9DA0A6', callback: function(v) { return sym + numFmtM(v); }}, grid: {color: '#222'}}
+            }
+        }
+    });
+}
+
+// === CHART INIT FUNCTIONS ===
+
+function initDonutChart() {
+    var totalRent = 0, totalCusa = 0, totalPark = 0;
+    for (var i = 0; i < 5; i++) {
+        totalRent += rentPHP[i] * 12;
+        totalCusa += cusaPHP[i] * 12;
+        totalPark += parkPHP * 12;
+    }
+    var ctx = document.getElementById('cvDonut').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Rent (82.6%)', 'CUSA (16.1%)', 'Parking (1.3%)'],
+            datasets: [{
+                data: [totalRent, totalCusa, totalPark],
+                backgroundColor: ['#10131A', '#FFD03F', '#2196F3'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '65%',
+            plugins: {
+                legend: {position: 'bottom', labels: {font: {size: 12}, padding: 16}},
+                title: {display: false}
+            }
+        },
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                var width = chart.width, height = chart.height, cctx = chart.ctx;
+                cctx.restore();
+                var fontSize = (height / 10).toFixed(0);
+                cctx.font = 'bold ' + fontSize + 'px Metropolis, Arial, sans-serif';
+                cctx.textBaseline = 'middle';
+                cctx.textAlign = 'center';
+                cctx.fillStyle = '#10131A';
+                cctx.fillText('₱130.1M', width / 2, height / 2 - 10);
+                cctx.font = '12px Arial, sans-serif';
+                cctx.fillStyle = '#9DA0A6';
+                cctx.fillText('5-Year Total', width / 2, height / 2 + 14);
+                cctx.save();
+            }
+        }]
+    });
+}
+
+function initMonthlyChart() {
+    var monthlyTotals = [];
+    var labels = [];
+    var monthNames = ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+    for (var y = 0; y < 5; y++) {
+        var mo = rentPHP[y] + cusaPHP[y] + parkPHP;
+        for (var m = 0; m < 12; m++) {
+            monthlyTotals.push(mo);
+            var yr = (y < 1) ? 2026 : 2026 + y;
+            var mIdx = (m + 6) % 12;
+            if (m % 3 === 0) {
+                labels.push(monthNames[m] + ' Y' + (y + 1));
+            } else {
+                labels.push('');
+            }
+        }
+    }
+    var ctx = document.getElementById('cvMonthly').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Total (₱)',
+                data: monthlyTotals,
+                borderColor: '#FFA200',
+                backgroundColor: 'rgba(255,162,0,0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 1,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {legend: {display: false}, title: {display: false}},
+            scales: {
+                x: {ticks: {font: {size: 10}, maxRotation: 45}, grid: {display: false}},
+                y: {ticks: {callback: function(v) { return '₱' + numFmtM(v); }}, grid: {color: '#eee'}, beginAtZero: false}
+            }
+        }
+    });
+}
+
+function initBenchmarkChart() {
+    var ctx = document.getElementById('cvBenchmark').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['This Lease', 'Market Low', 'Market Mid', 'Market High'],
+            datasets: [
+                {label: 'Rent (₱/sqm)', data: [750, 500, 700, 900], backgroundColor: '#10131A'},
+                {label: 'CUSA (₱/sqm)', data: [145, 100, 140, 180], backgroundColor: '#FFD03F'},
+                {label: 'Parking (₱/slot)', data: [2500, 2000, 3000, 4000], backgroundColor: '#2196F3'}
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {legend: {position: 'bottom', labels: {font: {size: 11}}}},
+            scales: {
+                x: {ticks: {font: {size: 10}}, grid: {color: '#eee'}},
+                y: {ticks: {font: {size: 11, weight: 'bold'}}, grid: {display: false}}
+            }
+        }
+    });
+}
+
+function initRiskExposureChart() {
+    var ctx = document.getElementById('cvRiskExposure').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Y1','Y2','Y3','Y4','Y5'],
+            datasets: [
+                {label: 'Unexpired Rent', data: [107, 85.5, 64.3, 43.5, 22.6], backgroundColor: '#D32F2F'},
+                {label: 'SD Forfeiture', data: [6.3, 6.3, 6.3, 6.3, 6.3], backgroundColor: '#F57C00'},
+                {label: 'Asset Lien', data: [15, 20, 25, 30, 35], backgroundColor: '#FBC02D'},
+                {label: 'Penalties', data: [3.2, 2.6, 2.0, 1.3, 0.7], backgroundColor: '#9C27B0'},
+                {label: 'Attorney Fees', data: [26.3, 22.9, 19.5, 16.2, 12.9], backgroundColor: '#607D8B'}
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {position: 'bottom', labels: {font: {size: 11}}},
+                title: {display: false}
+            },
+            scales: {
+                x: {stacked: true, grid: {display: false}},
+                y: {stacked: true, ticks: {callback: function(v) { return '₱' + v + 'M'; }}, grid: {color: '#eee'}}
+            }
+        }
+    });
+}
+
+// === INIT ALL ON LOAD ===
+window.onload = function() {
+    buildRiskMatrix();
+    renderComments('all');
+    initDonutChart();
+    initMonthlyChart();
+    initBenchmarkChart();
+    initRiskExposureChart();
+    calcROI();
+    updateEsc();
+};
+</script>
+</body>
+</html>
