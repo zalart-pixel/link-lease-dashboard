@@ -290,7 +290,7 @@ footer b{color:var(--ink)}
 
     <div class="ctx-grid">
       <div class="ctx"><div class="ctx-lbl">Office Area</div><div class="ctx-val"><span data-bind="officeSqm">2,273.56</span> sqm</div><div class="ctx-sub">leased floor</div></div>
-      <div class="ctx"><div class="ctx-lbl">Carpet Scope</div><div class="ctx-val"><span data-bind="scopeSqm">2,501</span> sqm</div><div class="ctx-sub">office + <span data-bind="wastePct">10</span>% waste</div></div>
+      <div class="ctx"><div class="ctx-lbl">Carpet Scope</div><div class="ctx-val"><span data-bind="scopeSqm">2,000</span> sqm</div><div class="ctx-sub">carpetable area + 10% disposal</div></div>
       <div class="ctx"><div class="ctx-lbl">Lease Term</div><div class="ctx-val">Jul 2026 – Jun 2031</div><div class="ctx-sub">5 years · break after Y2</div></div>
       <div class="ctx"><div class="ctx-lbl">Base Rent</div><div class="ctx-val">₱750/sqm</div><div class="ctx-sub">+5% at Y3 and Y5</div></div>
       <div class="ctx"><div class="ctx-lbl">CUSA + Parking</div><div class="ctx-val">₱145/sqm + ₱2,500/slot</div><div class="ctx-sub">additional monthly</div></div>
@@ -376,14 +376,14 @@ footer b{color:var(--ink)}
     </div>
 
     <div class="insight">
-      <b>Decisive finding.</b> Carpet scope equals the full <span data-bind="officeSqm">2,273.56</span> sqm office (<span data-bind="scopeSqm">2,501</span> sqm with waste). Loaded cost for the primary pick is <b>₱<span data-bind="loadedM">5.62M</span></b> (Dyninno 100%). The 5-year rent premium of the carpet tier over the no-carpet tier is <b>₱<span data-bind="rentDelta">3,548,457</span></b>. Management's preferred compensation (monthly ₱<span data-bind="deltaPsm">25</span>/sqm rent discount) recovers the full ₱<span data-bind="rentDeltaM">3.55M</span>, bringing net Dyninno exposure to <b>₱<span data-bind="netExposureM">2.08M</span></b> — a <span data-bind="recoveryPct">63</span>% recovery on loaded cost. Counter Charles's Y3 credit with the rent discount mechanism.
+      <b>Decisive finding.</b> Carpet scope is <span data-bind="scopeSqm">2,000</span> sqm (carpetable area + 10% disposal) within the <span data-bind="officeSqm">2,273.56</span> sqm leased office. Loaded cost for the primary pick is <b>₱<span data-bind="loadedM">4.50M</span></b> (Dyninno 100%). The 5-year rent premium of the carpet tier over the no-carpet tier is <b>₱<span data-bind="rentDelta">3,548,457</span></b>. Management's preferred compensation (monthly ₱<span data-bind="deltaPsm">25</span>/sqm rent discount) recovers the full ₱<span data-bind="rentDeltaM">3.55M</span>, bringing net Dyninno exposure to <b>₱<span data-bind="netExposureM">0.95M</span></b> — a <span data-bind="recoveryPct">79</span>% recovery on loaded cost. Counter Charles's Y3 credit with the rent discount mechanism.
     </div>
   </div>
 
   <!-- ============ COST ============ -->
   <div class="panel" id="p-cost">
     <h2>Cost Model</h2>
-    <div class="panelsub">Loaded capex for <span data-bind="scopeSqm">2,501</span> sqm (<span data-bind="officeSqm">2,273.56</span> sqm full office floor + <span data-bind="wastePct">10</span>% waste). Includes supply + removal + prep + install. Toggle the landlord compensation option to recompute net Dyninno exposure.</div>
+    <div class="panelsub">Loaded capex for <span data-bind="scopeSqm">2,000</span> sqm carpet scope (carpetable area + 10% disposal). Includes supply + removal + prep + install. Toggle the landlord compensation option to recompute net Dyninno exposure.</div>
 
     <div class="scenario-bar">
       <button data-scen="none" class="active">Dyninno 100% (baseline)</button>
