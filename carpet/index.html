@@ -271,7 +271,7 @@ footer b{color:var(--ink)}
       </div>
       <div class="sc-grp">
         <label>Carpet Scope (sqm)</label>
-        <input type="number" id="in-carpet" min="100" max="10000" step="1" value="2501">
+        <input type="number" id="in-carpet" min="100" max="10000" step="1" value="2000">
       </div>
       <div class="sc-grp">
         <label>Rent Carpet ₱/sqm</label>
@@ -684,7 +684,7 @@ footer b{color:var(--ink)}
 const OFFICE_SQM_FIXED = 2273.56;
 const STATE = {
   officeSqm: OFFICE_SQM_FIXED,  // FIXED — leased floor, not editable
-  carpetSqm: 2501,              // editable: carpet purchase + install scope
+  carpetSqm: 2000,              // editable: carpet purchase + install scope
   rentCarpet: 750,
   rentNoCarpet: 725,
   workPsm: 450,
@@ -1179,7 +1179,7 @@ function bindControls(){
     document.getElementById(id).addEventListener('input', update);
   });
   document.getElementById('resetState').addEventListener('click', ()=>{
-    document.getElementById('in-carpet').value = 2501;
+    document.getElementById('in-carpet').value = 2000;
     document.getElementById('in-rent-c').value = 750;
     document.getElementById('in-rent-n').value = 725;
     document.getElementById('in-work').value = 450;
