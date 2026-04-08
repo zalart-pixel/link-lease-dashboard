@@ -895,7 +895,7 @@ function recalcCost(){
     tbody.innerHTML += `<tr class="${rowClass}">
       <td><b>${f.name}</b><br><span class="pill neutral">${f.role}</span> ${localPill}<br><small style="color:var(--grey);font-size:10px">${f.durability} · ${f.warranty}</small></td>
       <td class="num">₱${fmt(f.php)}</td>
-      <td class="num">₱${fmt(WORK_PSM)}</td>
+      <td class="num">₱${fmt(STATE.workPsm)}</td>
       <td class="num">₱${fmt(f.supplyPHP)}</td>
       <td class="num">₱${fmt(f.workPHP)}</td>
       <td class="num"><b>₱${fmt(f.loadedPHP)}</b><br><small style="color:var(--grey);font-size:10px">€${fmt(f.loadedEURinc)}</small></td>
@@ -939,7 +939,7 @@ function initCharts(){
     type:'bar',
     data:{labels:[], datasets:[{label:'Surplus vs rent delta',data:[],backgroundColor:BRAND.ok,borderRadius:2}]},
     options:{...chartOpts,indexAxis:'y',
-      plugins:{legend:{display:false},title:{display:true,text:'Surplus vs ₱1.55M Rent Delta (+ = better)',font:{size:13,weight:600},color:BRAND.black,padding:{bottom:16}},
+      plugins:{legend:{display:false},title:{display:true,text:'Surplus vs Rent Delta (+ = better)',font:{size:13,weight:600},color:BRAND.black,padding:{bottom:16}},
         tooltip:{callbacks:{label:c=>(c.parsed.x>=0?'+':'')+'₱'+fmt(c.parsed.x)}}},
       scales:{x:{ticks:{callback:v=>'₱'+(v/1e6).toFixed(1)+'M'},grid:{color:'#E5E7EB'}},y:{grid:{display:false}}}}
   });
