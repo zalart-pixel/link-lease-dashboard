@@ -82,6 +82,15 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;ba
 .chip.yellow{background:var(--yellow);color:var(--black);border-color:var(--yellow)}
 .chip.yellow::before{background:var(--black)}
 
+/* ====== Scope controls (live inputs) ====== */
+.scope-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:14px 16px;background:linear-gradient(135deg,#FFFDE7 0%,#FFF8C8 100%);border:1px solid #F0D878;border-radius:6px;margin-bottom:18px}
+.sc-grp{display:flex;flex-direction:column}
+.sc-grp label{font-size:9px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;color:var(--ink);margin-bottom:5px}
+.sc-grp input{padding:7px 10px;border:1px solid var(--line-2);border-radius:4px;font-size:13px;font-weight:700;background:var(--white);color:var(--black);width:120px;font-family:inherit;font-variant-numeric:tabular-nums}
+.sc-grp input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,162,0,.2)}
+.sc-reset{margin-left:auto;padding:9px 16px;background:var(--black);color:var(--yellow);border:none;border-radius:4px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;font-family:inherit}
+.sc-reset:hover{background:#1a1f2b}
+
 /* ====== Context strip ====== */
 .context-strip{background:var(--white);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
 .ctx-title{font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line)}
@@ -219,22 +228,22 @@ footer b{color:var(--ink)}
       <div>
         <div class="hero-stat">
           <div class="lbl">Loaded Cost</div>
-          <div class="val">₱5.62M</div>
-          <div class="sub">€80,996 incl VAT · €72,318 ex VAT · 2,501 sqm</div>
+          <div class="val">₱<span data-bind="loadedM">5.62M</span></div>
+          <div class="sub">€<span data-bind="loadedEURinc">80,996</span> incl VAT · €<span data-bind="loadedEURex">72,318</span> ex VAT · <span data-bind="scopeSqm">2,501</span> sqm</div>
         </div>
       </div>
       <div>
         <div class="hero-stat">
           <div class="lbl">Recommended Compensation</div>
           <div class="val small">Monthly Rent Discount</div>
-          <div class="sub">₱25/sqm/mo · recovers ₱3.55M over 5 yr</div>
+          <div class="sub">₱<span data-bind="deltaPsm">25</span>/sqm/mo · recovers ₱<span data-bind="rentDeltaM">3.55M</span> over 5 yr</div>
         </div>
       </div>
       <div>
         <div class="hero-stat">
           <div class="lbl">Net Dyninno Exposure</div>
-          <div class="val">₱2,076,292</div>
-          <div class="sub">€26,691 ex VAT · after rent discount</div>
+          <div class="val">₱<span data-bind="netExposurePHP">2,076,292</span></div>
+          <div class="sub">€<span data-bind="netExposureEURex">26,691</span> ex VAT · after rent discount</div>
         </div>
       </div>
     </div>
@@ -249,10 +258,36 @@ footer b{color:var(--ink)}
 
   <!-- Building context strip -->
   <div class="context-strip">
-    <div class="ctx-title">Lease Context <span>source: link-lease-dashboard</span></div>
+    <div class="ctx-title">Lease Context <span>all values below are live — adjust scope to recompute</span></div>
+
+    <!-- LIVE SCOPE CONTROLS -->
+    <div class="scope-controls">
+      <div class="sc-grp">
+        <label>Office Area (sqm)</label>
+        <input type="number" id="in-office" min="100" max="10000" step="0.01" value="2273.56">
+      </div>
+      <div class="sc-grp">
+        <label>Waste / Attic %</label>
+        <input type="number" id="in-waste" min="0" max="30" step="1" value="10">
+      </div>
+      <div class="sc-grp">
+        <label>Rent Carpet ₱/sqm</label>
+        <input type="number" id="in-rent-c" min="100" max="3000" step="5" value="750">
+      </div>
+      <div class="sc-grp">
+        <label>Rent No-Carpet ₱/sqm</label>
+        <input type="number" id="in-rent-n" min="100" max="3000" step="5" value="725">
+      </div>
+      <div class="sc-grp">
+        <label>Work ₱/sqm</label>
+        <input type="number" id="in-work" min="100" max="2000" step="10" value="450">
+      </div>
+      <button id="resetState" class="sc-reset">Reset</button>
+    </div>
+
     <div class="ctx-grid">
-      <div class="ctx"><div class="ctx-lbl">Office Area</div><div class="ctx-val">2,273.56 sqm</div><div class="ctx-sub">24,473 sqft · 18F + 19F</div></div>
-      <div class="ctx"><div class="ctx-lbl">Carpet Scope</div><div class="ctx-val">2,501 sqm</div><div class="ctx-sub">full office + 10% waste/attic</div></div>
+      <div class="ctx"><div class="ctx-lbl">Office Area</div><div class="ctx-val"><span data-bind="officeSqm">2,273.56</span> sqm</div><div class="ctx-sub">leased floor</div></div>
+      <div class="ctx"><div class="ctx-lbl">Carpet Scope</div><div class="ctx-val"><span data-bind="scopeSqm">2,501</span> sqm</div><div class="ctx-sub">office + <span data-bind="wastePct">10</span>% waste</div></div>
       <div class="ctx"><div class="ctx-lbl">Lease Term</div><div class="ctx-val">Jul 2026 – Jun 2031</div><div class="ctx-sub">5 years · break after Y2</div></div>
       <div class="ctx"><div class="ctx-lbl">Base Rent</div><div class="ctx-val">₱750/sqm</div><div class="ctx-sub">+5% at Y3 and Y5</div></div>
       <div class="ctx"><div class="ctx-lbl">CUSA + Parking</div><div class="ctx-val">₱145/sqm + ₱2,500/slot</div><div class="ctx-sub">additional monthly</div></div>
@@ -270,23 +305,23 @@ footer b{color:var(--ink)}
   <div class="kpis">
     <div class="kpi accent">
       <div class="label">Loaded Cost</div>
-      <div class="value">₱5.62M</div>
-      <div class="delta">Supply + work · 2,501 sqm · primary pick</div>
+      <div class="value">₱<span data-bind="loadedM">5.62M</span></div>
+      <div class="delta">Supply + work · <span data-bind="scopeSqm">2,501</span> sqm · primary pick</div>
     </div>
     <div class="kpi warn">
       <div class="label">Work Layer</div>
-      <div class="value">₱1.13M</div>
-      <div class="delta">Remove + prep + install · ₱450/sqm</div>
+      <div class="value">₱<span data-bind="workTotalM">1.13M</span></div>
+      <div class="delta">Remove + prep + install · ₱<span data-bind="workPsm">450</span>/sqm</div>
     </div>
     <div class="kpi ok">
       <div class="label">Net after Rent Discount</div>
-      <div class="value">₱2.08M</div>
-      <div class="delta">Option A · ₱25/sqm/mo × 60</div>
+      <div class="value">₱<span data-bind="netExposureM">2.08M</span></div>
+      <div class="delta">Option A · ₱<span data-bind="deltaPsm">25</span>/sqm/mo × 60</div>
     </div>
     <div class="kpi">
       <div class="label">Recovery Rate</div>
-      <div class="value">63%</div>
-      <div class="delta">₱3.55M of ₱5.62M loaded</div>
+      <div class="value"><span data-bind="recoveryPct">63</span>%</div>
+      <div class="delta">₱<span data-bind="rentDeltaM">3.55M</span> of ₱<span data-bind="loadedM">5.62M</span> loaded</div>
     </div>
     <div class="kpi">
       <div class="label">SKUs Analyzed</div>
@@ -321,8 +356,8 @@ footer b{color:var(--ink)}
       <div class="specs">
         <div class="spec"><div class="lbl">Price</div><div class="val">₱1,799/sqm</div></div>
         <div class="spec"><div class="lbl">PH Stock</div><div class="val">620 sqm</div></div>
-        <div class="spec"><div class="lbl">Loaded (2,501 sqm)</div><div class="val">₱5.62M</div></div>
-        <div class="spec"><div class="lbl">Net (Option A)</div><div class="val">₱2.08M</div></div>
+        <div class="spec"><div class="lbl">Loaded (<span data-bind="scopeSqm">2,501</span> sqm)</div><div class="val">₱<span data-bind="loadedM">5.62M</span></div></div>
+        <div class="spec"><div class="lbl">Net (Option A)</div><div class="val">₱<span data-bind="netExposureM">2.08M</span></div></div>
         <div class="spec"><div class="lbl">RIX Score</div><div class="val">30/30</div></div>
       </div>
     </div>
@@ -338,14 +373,14 @@ footer b{color:var(--ink)}
     </div>
 
     <div class="insight">
-      <b>Decisive finding.</b> Carpet scope equals the full 2,273.56 sqm office (2,501 sqm with waste). Loaded cost for the primary pick is <b>₱5.62M</b> (Dyninno 100%). The 5-year rent premium of the carpet tier over the no-carpet tier is <b>₱3,548,457</b>. Management's preferred compensation (monthly ₱25/sqm rent discount) recovers the full ₱3.55M, bringing net Dyninno exposure to <b>₱2.08M</b> — a 63% recovery on loaded cost. Counter Charles's Y3 credit with the rent discount mechanism.
+      <b>Decisive finding.</b> Carpet scope equals the full <span data-bind="officeSqm">2,273.56</span> sqm office (<span data-bind="scopeSqm">2,501</span> sqm with waste). Loaded cost for the primary pick is <b>₱<span data-bind="loadedM">5.62M</span></b> (Dyninno 100%). The 5-year rent premium of the carpet tier over the no-carpet tier is <b>₱<span data-bind="rentDelta">3,548,457</span></b>. Management's preferred compensation (monthly ₱<span data-bind="deltaPsm">25</span>/sqm rent discount) recovers the full ₱<span data-bind="rentDeltaM">3.55M</span>, bringing net Dyninno exposure to <b>₱<span data-bind="netExposureM">2.08M</span></b> — a <span data-bind="recoveryPct">63</span>% recovery on loaded cost. Counter Charles's Y3 credit with the rent discount mechanism.
     </div>
   </div>
 
   <!-- ============ COST ============ -->
   <div class="panel" id="p-cost">
     <h2>Cost Model</h2>
-    <div class="panelsub">Loaded capex for 2,501 sqm (2,273.56 sqm full office floor + 10% waste). Includes supply + removal + prep + install. Toggle the landlord compensation option to recompute net Dyninno exposure.</div>
+    <div class="panelsub">Loaded capex for <span data-bind="scopeSqm">2,501</span> sqm (<span data-bind="officeSqm">2,273.56</span> sqm full office floor + <span data-bind="wastePct">10</span>% waste). Includes supply + removal + prep + install. Toggle the landlord compensation option to recompute net Dyninno exposure.</div>
 
     <div class="scenario-bar">
       <button data-scen="none" class="active">Dyninno 100% (baseline)</button>
@@ -366,7 +401,7 @@ footer b{color:var(--ink)}
         <th>Finalist</th>
         <th class="num">Supply<br><small style="font-weight:500;text-transform:none">₱/sqm</small></th>
         <th class="num">+ Work<br><small style="font-weight:500;text-transform:none">₱450/sqm</small></th>
-        <th class="num">Supply Total<br><small style="font-weight:500;text-transform:none">2,501 sqm</small></th>
+        <th class="num">Supply Total<br><small style="font-weight:500;text-transform:none"><span data-bind="scopeSqm">2,501</span> sqm</small></th>
         <th class="num">Work Total</th>
         <th class="num">Loaded PHP<br><small style="font-weight:500;text-transform:none">incl VAT</small></th>
         <th class="num">EUR ex VAT</th>
@@ -380,7 +415,7 @@ footer b{color:var(--ink)}
   <!-- ============ LANDLORD COMPENSATION ============ -->
   <div class="panel" id="p-comp">
     <h2>Landlord Compensation Options</h2>
-    <div class="panelsub">Per April 7 negotiation: Dyninno funds 100% of the carpet work across the full 2,273.56 sqm office floor. Landlord (Charles / Innoland) offers compensation. Management's preference is a monthly rent discount. Below compares the three realistic mechanisms side-by-side against the primary pick (DESSO Essence Pure 9111, loaded ₱5.62M).</div>
+    <div class="panelsub">Per April 7 negotiation: Dyninno funds 100% of the carpet work across the full <span data-bind="officeSqm">2,273.56</span> sqm office floor. Landlord (Charles / Innoland) offers compensation. Management's preference is a monthly rent discount. Below compares the three realistic mechanisms side-by-side against the primary pick (DESSO Essence Pure 9111, loaded ₱<span data-bind="loadedM">5.62M</span>).</div>
 
     <table>
       <thead><tr>
@@ -395,28 +430,28 @@ footer b{color:var(--ink)}
       <tbody>
         <tr class="row-primary">
           <td><b>A. Monthly Rent Discount</b><br><span class="pill accent">PREFERRED</span></td>
-          <td>₱25/sqm/mo reduction on base rent, 2,273.56 sqm × 60 months with Y3/Y5 escalation, mirrors carpet vs no-carpet tier delta</td>
-          <td class="num">₱3,548,457</td>
+          <td>₱<span data-bind="deltaPsm">25</span>/sqm/mo reduction on base rent, <span data-bind="officeSqm">2,273.56</span> sqm × 60 months with Y3/Y5 escalation, mirrors carpet vs no-carpet tier delta</td>
+          <td class="num">₱<span data-bind="rentDelta">3,548,457</span></td>
           <td class="num">0%</td>
-          <td class="num"><b>₱3,548,457</b></td>
+          <td class="num"><b>₱<span data-bind="rentDelta">3,548,457</span></b></td>
           <td>Immediate, unconditional, survives early exit from Y3</td>
-          <td><span class="pill ok">Covers 63% of loaded capex</span></td>
+          <td><span class="pill ok">Covers <span data-bind="recoveryPct">63</span>% of loaded capex</span></td>
         </tr>
         <tr>
           <td><b>B. 50% Credit after Year 3</b><br><span class="pill neutral">Charles's offer</span></td>
           <td>50% of carpet capex credited against rent instalments after Y3 completion (month 37+)</td>
-          <td class="num">₱2,812,375</td>
+          <td class="num">₱<span data-bind="optBNominal">2,812,375</span></td>
           <td class="num">−12%</td>
-          <td class="num">₱2,474,890</td>
+          <td class="num">₱<span data-bind="optBEffective">2,474,890</span></td>
           <td>Forfeited if Dyninno exercises break clause after Y2, 2 yr delay to start</td>
           <td><span class="pill warn">Forfeit risk + time value</span></td>
         </tr>
         <tr>
           <td><b>C. Lump Sum Rebate at Fit-out</b><br><span class="pill neutral">Alternative</span></td>
           <td>One-time landlord contribution paid at handover (propose 40% of loaded cost)</td>
-          <td class="num">₱2,249,900</td>
+          <td class="num">₱<span data-bind="optCNominal">2,249,900</span></td>
           <td class="num">0%</td>
-          <td class="num">₱2,249,900</td>
+          <td class="num">₱<span data-bind="optCNominal">2,249,900</span></td>
           <td>Immediate, no strings; hardest to secure</td>
           <td><span class="pill neutral">Clean but lower value</span></td>
         </tr>
@@ -424,18 +459,18 @@ footer b{color:var(--ink)}
     </table>
 
     <div class="insight">
-      <b>Recommendation: push for Option A (monthly rent discount of ₱25/sqm).</b> It delivers the highest effective recovery (₱3.55M, 63% of loaded capex), is unconditional, survives Dyninno exercising the post-Y2 break clause, and avoids tying Dyninno to stay past Y3 just to collect the credit. Option B forfeits entirely if Dyninno leaves early — a meaningful risk given the break clause was a key negotiated term.
+      <b>Recommendation: push for Option A (monthly rent discount of ₱<span data-bind="deltaPsm">25</span>/sqm).</b> It delivers the highest effective recovery (₱<span data-bind="rentDeltaM">3.55M</span>, <span data-bind="recoveryPct">63</span>% of loaded capex), is unconditional, survives Dyninno exercising the post-Y2 break clause, and avoids tying Dyninno to stay past Y3 just to collect the credit. Option B forfeits entirely if Dyninno leaves early — a meaningful risk given the break clause was a key negotiated term.
     </div>
 
     <h2 style="margin-top:36px;font-size:18px">Net Dyninno Exposure by Option (Primary Pick)</h2>
-    <div class="panelsub">DESSO Essence Pure 9111, 2,501 sqm installed (full office + 10% waste), loaded cost ₱5,624,749 incl. supply + removal + prep + install.</div>
+    <div class="panelsub">DESSO Essence Pure 9111, <span data-bind="scopeSqm">2,501</span> sqm installed, loaded cost ₱<span data-bind="loadedPHP">5,624,749</span> incl. supply + removal + prep + install.</div>
     <table>
       <thead><tr><th>Scenario</th><th class="num">Loaded Cost</th><th class="num">Landlord Comp</th><th class="num">Net Exposure</th><th class="num">EUR ex VAT</th></tr></thead>
       <tbody>
-        <tr><td>Dyninno 100% (no comp)</td><td class="num">₱5,624,749</td><td class="num">₱0</td><td class="num"><b>₱5,624,749</b></td><td class="num">€72,318</td></tr>
-        <tr class="row-primary"><td><b>Option A — Rent Discount</b></td><td class="num">₱5,624,749</td><td class="num">−₱3,548,457</td><td class="num"><b>₱2,076,292</b></td><td class="num">€26,691</td></tr>
-        <tr><td>Option B — Credit after Y3</td><td class="num">₱5,624,749</td><td class="num">−₱2,474,890</td><td class="num"><b>₱3,149,859</b></td><td class="num">€40,499</td></tr>
-        <tr><td>Option C — Lump Sum (40%)</td><td class="num">₱5,624,749</td><td class="num">−₱2,249,900</td><td class="num"><b>₱3,374,849</b></td><td class="num">€43,391</td></tr>
+        <tr><td>Dyninno 100% (no comp)</td><td class="num">₱<span data-bind="loadedPHP">5,624,749</span></td><td class="num">₱0</td><td class="num"><b>₱<span data-bind="loadedPHP">5,624,749</span></b></td><td class="num">€<span data-bind="loadedEURex">72,318</span></td></tr>
+        <tr class="row-primary"><td><b>Option A — Rent Discount</b></td><td class="num">₱<span data-bind="loadedPHP">5,624,749</span></td><td class="num">−₱<span data-bind="rentDelta">3,548,457</span></td><td class="num"><b>₱<span data-bind="netA">2,076,292</span></b></td><td class="num">€<span data-bind="netAEUR">26,691</span></td></tr>
+        <tr><td>Option B — Credit after Y3</td><td class="num">₱<span data-bind="loadedPHP">5,624,749</span></td><td class="num">−₱<span data-bind="optBEffective">2,474,890</span></td><td class="num"><b>₱<span data-bind="netB">3,149,859</span></b></td><td class="num">€<span data-bind="netBEUR">40,499</span></td></tr>
+        <tr><td>Option C — Lump Sum (40%)</td><td class="num">₱<span data-bind="loadedPHP">5,624,749</span></td><td class="num">−₱<span data-bind="optCNominal">2,249,900</span></td><td class="num"><b>₱<span data-bind="netC">3,374,849</span></b></td><td class="num">€<span data-bind="netCEUR">43,391</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -445,25 +480,25 @@ footer b{color:var(--ink)}
     <h2>Supply + Work Cost Breakdown</h2>
     <div class="panelsub">Dyninno covers 100% of the carpet scope: supply, removal of existing carpet, subfloor prep, and new install. Work costs are Philippine contractor rates (2026).</div>
 
-    <h2 style="margin-top:20px;font-size:18px">Work Cost Layer (₱450/sqm loaded)</h2>
+    <h2 style="margin-top:20px;font-size:18px">Work Cost Layer (₱<span data-bind="workPsm">450</span>/sqm loaded)</h2>
     <table>
-      <thead><tr><th>Component</th><th class="num">₱/sqm</th><th class="num">2,501 sqm Total</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Component</th><th class="num">₱/sqm</th><th class="num"><span data-bind="scopeSqm">2,501</span> sqm Total</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td><b>Supply</b> (primary pick, Essence Pure 9111)</td><td class="num">₱1,799</td><td class="num">₱4,499,299</td><td>SRP (volume order, no sale discount per Charles)</td></tr>
-        <tr><td>Removal of existing carpet + disposal</td><td class="num">₱120</td><td class="num">₱300,120</td><td>Lift, cut, bag, haul off-site</td></tr>
-        <tr><td>Subfloor prep (patch, level, vacuum)</td><td class="num">₱80</td><td class="num">₱200,080</td><td>Skim coat where needed</td></tr>
-        <tr><td>Adhesive + install (tile-by-tile)</td><td class="num">₱250</td><td class="num">₱625,250</td><td>Spray adhesive, certified installer</td></tr>
-        <tr style="background:var(--cool)"><td><b>Work sub-total</b></td><td class="num"><b>₱450</b></td><td class="num"><b>₱1,125,450</b></td><td>+25% on supply cost</td></tr>
-        <tr class="row-primary"><td><b>LOADED TOTAL (Essence Pure 9111)</b></td><td class="num"><b>₱2,249</b></td><td class="num"><b>₱5,624,749</b></td><td>€80,996 incl VAT · €72,318 ex VAT</td></tr>
+        <tr><td><b>Supply</b> (primary pick, Essence Pure 9111)</td><td class="num">₱1,799</td><td class="num">₱<span data-bind="supplyTotal">4,499,299</span></td><td>SRP (volume order, no sale discount per Charles)</td></tr>
+        <tr><td>Removal of existing carpet + disposal</td><td class="num">₱120</td><td class="num">₱<span data-bind="workRemoveTotal">300,120</span></td><td>Lift, cut, bag, haul off-site</td></tr>
+        <tr><td>Subfloor prep (patch, level, vacuum)</td><td class="num">₱80</td><td class="num">₱<span data-bind="workPrepTotal">200,080</span></td><td>Skim coat where needed</td></tr>
+        <tr><td>Adhesive + install (tile-by-tile)</td><td class="num">₱250</td><td class="num">₱<span data-bind="workInstallTotal">625,250</span></td><td>Spray adhesive, certified installer</td></tr>
+        <tr style="background:var(--cool)"><td><b>Work sub-total</b></td><td class="num"><b>₱<span data-bind="workPsm">450</span></b></td><td class="num"><b>₱<span data-bind="workSubtotal">1,125,450</span></b></td><td>+25% on supply cost</td></tr>
+        <tr class="row-primary"><td><b>LOADED TOTAL (Essence Pure 9111)</b></td><td class="num"><b>₱2,249</b></td><td class="num"><b>₱<span data-bind="loadedPHP">5,624,749</span></b></td><td>€<span data-bind="loadedEURinc">80,996</span> incl VAT · €<span data-bind="loadedEURex">72,318</span> ex VAT</td></tr>
       </tbody>
     </table>
 
     <h2 style="margin-top:32px;font-size:18px">Training Rooms Scope Note</h2>
-    <div class="panelsub">Two training rooms at 20–25 HC each = ~50 workstations. Estimate ~80–100 sqm of the 2,273.56 sqm full office floor. No separate specification — training rooms get the same primary carpet as the open BPO floor for visual continuity, with optional zoning accent (Tandus Layer CB) if designer requests contrast.</div>
+    <div class="panelsub">Two training rooms at 20–25 HC each = ~50 workstations. Estimate ~80–100 sqm of the <span data-bind="officeSqm">2,273.56</span> sqm full office floor. No separate specification — training rooms get the same primary carpet as the open BPO floor for visual continuity, with optional zoning accent (Tandus Layer CB) if designer requests contrast.</div>
 
     <h2 style="margin-top:20px;font-size:18px">Notes on Volume Pricing (per Charles / April 7)</h2>
     <div class="insight">
-      Charles confirmed that the 38–50% sale discounts visible in the Domus stock file <b>apply only to odd-lot inventory of 5–150 sqm</b>. For a full-floor order of 2,501 sqm, the volume order is priced at SRP with a <b>modest negotiated volume discount</b> (estimate 10–15%, to be confirmed). Prices shown in this dashboard use SRP as the conservative planning baseline. Any volume discount secured through negotiation is upside that further improves the net Dyninno position.
+      Charles confirmed that the 38–50% sale discounts visible in the Domus stock file <b>apply only to odd-lot inventory of 5–150 sqm</b>. For a full-floor order of <span data-bind="scopeSqm">2,501</span> sqm, the volume order is priced at SRP with a <b>modest negotiated volume discount</b> (estimate 10–15%, to be confirmed). Prices shown in this dashboard use SRP as the conservative planning baseline. Any volume discount secured through negotiation is upside that further improves the net Dyninno position.
     </div>
   </div>
 
@@ -489,10 +524,10 @@ footer b{color:var(--ink)}
     <div class="primary-callout">
       <div class="role">Primary DESSO SKU</div>
       <div class="name">Essence Pure 9111</div>
-      <div class="desc">Clean tonal loop, 500 × 500 × 6.5 mm, new collection from Tarkett NL. Perfect RIX match. Current PH stock covers only 25% of the 2,501 sqm scope — bulk indent required.</div>
+      <div class="desc">Clean tonal loop, 500 × 500 × 6.5 mm, new collection from Tarkett NL. Perfect RIX match. Current PH stock covers part of the <span data-bind="scopeSqm">2,501</span> sqm scope — bulk indent required.</div>
       <div class="specs">
         <div class="spec"><div class="lbl">PH Stock</div><div class="val">620 sqm</div></div>
-        <div class="spec"><div class="lbl">Indent Needed</div><div class="val">1,881 sqm</div></div>
+        <div class="spec"><div class="lbl">Indent Needed</div><div class="val"><span data-bind="indentSqm">1,881</span> sqm</div></div>
         <div class="spec"><div class="lbl">SRP</div><div class="val">₱1,799/sqm</div></div>
         <div class="spec"><div class="lbl">Lead Time</div><div class="val">10–14 wk</div></div>
         <div class="spec"><div class="lbl">Origin</div><div class="val">Netherlands</div></div>
@@ -521,7 +556,7 @@ footer b{color:var(--ink)}
   <!-- ============ TANDUS ============ -->
   <div class="panel" id="p-tandus">
     <h2>Tandus Inventory</h2>
-    <div class="panelsub">12 SKUs. Total ~1,644 sqm stock, far below the 2,501 sqm full-office requirement. Not viable as main floor; best deployed as a zoning accent.</div>
+    <div class="panelsub">12 SKUs. Total ~1,644 sqm stock, vs the <span data-bind="scopeSqm">2,501</span> sqm full-office requirement. Not viable as main floor; best deployed as a zoning accent.</div>
 
     <div class="primary-callout">
       <div class="role">Recommended Tandus SKU (Accent Only)</div>
@@ -576,7 +611,7 @@ footer b{color:var(--ink)}
       </div>
       <div class="expand-body"><div class="expand-body-inner">
         <table>
-          <thead><tr><th>Brand</th><th>Origin</th><th>PH Distributor</th><th class="num">PHP/sqm</th><th>Durability</th><th>Lead</th><th class="num">2,501 sqm PHP</th><th>Role</th></tr></thead>
+          <thead><tr><th>Brand</th><th>Origin</th><th>PH Distributor</th><th class="num">PHP/sqm</th><th>Durability</th><th>Lead</th><th class="num"><span data-bind="scopeSqm">2,501</span> sqm PHP</th><th>Role</th></tr></thead>
           <tbody id="altBody"></tbody>
         </table>
       </div></div>
@@ -593,7 +628,7 @@ footer b{color:var(--ink)}
       <tbody id="rentBody"></tbody>
     </table>
     <div class="insight">
-      The 5-year rent premium of <b>₱3,548,457</b> is the threshold any carpet capex decision must be measured against. The landlord recovers this amount through the rent uplift regardless of who funds the initial carpet.
+      The 5-year rent premium of <b>₱<span data-bind="rentDelta">3,548,457</span></b> is the threshold any carpet capex decision must be measured against. The landlord recovers this amount through the rent uplift regardless of who funds the initial carpet.
     </div>
 
     <h2 style="margin-top:36px;font-size:18px">Carpet Cost in Full Lease Context</h2>
@@ -601,19 +636,19 @@ footer b{color:var(--ink)}
     <table>
       <thead><tr><th>Component</th><th class="num">Amount PHP</th><th class="num">% of All-In</th><th>Notes</th></tr></thead>
       <tbody>
-        <tr><td><b>Base Rent (5 yr, carpet tier)</b></td><td class="num">₱106,453,763</td><td class="num">81.8%</td><td>2,273.56 sqm × ₱750 × 60 mo + Y3/Y5 escalation</td></tr>
-        <tr><td>CUSA (5 yr, 2,273.56 sqm × ₱145)</td><td class="num">₱19,780,000</td><td class="num">15.2%</td><td>Unchanged by carpet</td></tr>
+        <tr><td><b>Base Rent (5 yr, carpet tier)</b></td><td class="num">₱<span data-bind="rent5yrC">106,453,763</span></td><td class="num"><span data-bind="rent5yrPct">81.8</span>%</td><td><span data-bind="officeSqm">2,273.56</span> sqm × ₱<span data-bind="rentCarpet">750</span> × 60 mo + Y3/Y5 escalation</td></tr>
+        <tr><td>CUSA (5 yr × ₱145/sqm)</td><td class="num">₱<span data-bind="cusa">19,780,000</span></td><td class="num"><span data-bind="cusaPct">15.2</span>%</td><td>Unchanged by carpet</td></tr>
         <tr><td>Parking (11 slots × ₱2,500 × 60 mo)</td><td class="num">₱1,650,000</td><td class="num">1.3%</td><td>Fixed additional</td></tr>
-        <tr><td>Other (VAT, fit-out, indirect)</td><td class="num">₱2,236,237</td><td class="num">1.7%</td><td>Balance to ₱130.12M all-in</td></tr>
+        <tr><td>Other (VAT, fit-out, indirect)</td><td class="num">₱<span data-bind="otherCalc">2,236,237</span></td><td class="num"><span data-bind="otherPct">1.7</span>%</td><td>Balance to ₱130.12M all-in</td></tr>
         <tr style="background:var(--cool);font-weight:700"><td>5 YR ALL-IN LEASE TOTAL</td><td class="num">₱130,120,000</td><td class="num">100.0%</td><td>≈ $2.32M USD</td></tr>
-        <tr class="row-primary"><td><b>Carpet loaded capex (Dyninno 100%)</b></td><td class="num"><b>₱5,624,749</b></td><td class="num"><b>4.32%</b></td><td>Essence Pure 9111 primary pick, incl. work</td></tr>
-        <tr class="row-primary"><td><b>Net after rent discount (Option A)</b></td><td class="num"><b>₱2,076,292</b></td><td class="num"><b>1.60%</b></td><td>After ₱3.55M rent discount recovery</td></tr>
-        <tr class="row-primary"><td><b>Rent delta (carpet vs no-carpet)</b></td><td class="num"><b>₱3,548,457</b></td><td class="num"><b>2.73%</b></td><td>Threshold to beat</td></tr>
+        <tr class="row-primary"><td><b>Carpet loaded capex (Dyninno 100%)</b></td><td class="num"><b>₱<span data-bind="loadedPHP">5,624,749</span></b></td><td class="num"><b><span data-bind="loadedPct">4.32</span>%</b></td><td>Essence Pure 9111 primary pick, incl. work</td></tr>
+        <tr class="row-primary"><td><b>Net after rent discount (Option A)</b></td><td class="num"><b>₱<span data-bind="netExposurePHP">2,076,292</span></b></td><td class="num"><b><span data-bind="netPct">1.60</span>%</b></td><td>After ₱<span data-bind="rentDeltaM">3.55M</span> rent discount recovery</td></tr>
+        <tr class="row-primary"><td><b>Rent delta (carpet vs no-carpet)</b></td><td class="num"><b>₱<span data-bind="rentDelta">3,548,457</span></b></td><td class="num"><b><span data-bind="deltaPct">2.73</span>%</b></td><td>Threshold to beat</td></tr>
       </tbody>
     </table>
 
     <div class="insight">
-      At <b>4.32%</b> of the 5-year all-in lease, the Dyninno loaded carpet cost is material but manageable. After the proposed rent discount (Option A), net exposure drops to <b>1.60%</b> of the ₱130.12M total lease commitment — well below the 2.73% rent delta that Dyninno would otherwise pay as a premium on the carpet-tier rent. Brand fidelity on the full 2,273.56 sqm floor is still the right call.
+      At <b><span data-bind="loadedPct">4.32</span>%</b> of the 5-year all-in lease, the Dyninno loaded carpet cost is material but manageable. After the proposed rent discount (Option A), net exposure drops to <b><span data-bind="netPct">1.60</span>%</b> of the ₱130.12M total lease commitment — well below the <span data-bind="deltaPct">2.73</span>% rent delta that Dyninno would otherwise pay as a premium on the carpet-tier rent. Brand fidelity on the full <span data-bind="officeSqm">2,273.56</span> sqm floor is still the right call.
     </div>
   </div>
 
@@ -641,20 +676,40 @@ footer b{color:var(--ink)}
 </footer>
 
 <script>
-// ====== Data ======
-// Carpet scope = full leased office area: 2,273.56 sqm gross, +10% waste = 2,501 sqm required
-const OFFICE_SQM = 2273.56;
-const RENT_DELTA = 3548457; // 5-yr rent delta carpet vs no-carpet tier on 2,273.56 sqm, Y3/Y5 +5%
+// ====== Reactive State ======
+// Single source of truth for scope and pricing. Edit STATE via the controls and everything recomputes.
+const STATE = {
+  officeSqm: 2273.56,   // full leased office area
+  wastePct: 10,         // waste / attic / cut buffer
+  rentCarpet: 750,      // PHP/sqm/mo carpet tier
+  rentNoCarpet: 725,    // PHP/sqm/mo no-carpet tier
+  workPsm: 450,         // ₱/sqm loaded work cost (remove + prep + install)
+  removePsm: 120,
+  prepPsm: 80,
+  installPsm: 250,
+  fxPhpEur: 0.0144,     // PHP -> EUR
+  vatRate: 0.12,        // PH VAT
+  // derived
+  get scopeSqm()  { return Math.round(this.officeSqm * (1 + this.wastePct/100)); },
+  get deltaPsm()  { return this.rentCarpet - this.rentNoCarpet; },
+  // Year-by-year rent stream with +5% Y3, Y5
+  rentYearTotals(rate){
+    const y12 = this.officeSqm * rate * 12;
+    const y34 = y12 * 1.05;
+    const y5  = y34 * 1.05;
+    return [y12, y12, y34, y34, y5];
+  },
+  get rent5yr(){ return this.rentYearTotals(this.rentCarpet).reduce((a,b)=>a+b,0); },
+  get rent5yrNo(){ return this.rentYearTotals(this.rentNoCarpet).reduce((a,b)=>a+b,0); },
+  get rentDelta5yr(){ return this.rent5yr - this.rent5yrNo; },
+};
+
+// Derived constants kept for legacy code paths
+let RENT_DELTA = STATE.rentDelta5yr;
+let COMP_DISCOUNT = STATE.rentDelta5yr;
 
 // Supply prices are SRP (volume orders don't get the odd-lot 38-50% sale discount per Charles).
-// PHP prices are VAT-inclusive (12% PH VAT). FX: 1 PHP = 0.0144 EUR.
-// Work cost: remove old (₱120) + subfloor prep (₱80) + adhesive & install (₱250) = ₱450/sqm loaded.
-const WORK_PSM = 450;
-const REMOVE_PSM = 120;
-const PREP_PSM = 80;
-const INSTALL_PSM = 250;
-const SQM_REQ = 2501; // 2,273.56 office + 10% waste/attic
-
+// PHP prices are VAT-inclusive (12% PH VAT).
 const finalists = [
   {name:"DESSO Essence Pure 9111", php:1799, origin:"Netherlands", local:false, durability:"EN 1307 Class 33", warranty:"15 yr", color:5, pattern:5, format:5, constr:5, brand:5, aesth:5, role:"Primary"},
   {name:"DESSO Stratos 7073", php:1839, origin:"Netherlands", local:false, durability:"EN 1307 Class 33", warranty:"15 yr", color:4, pattern:4, format:5, constr:5, brand:4, aesth:4, role:"Value Backup"},
@@ -666,18 +721,20 @@ const finalists = [
   {name:"Shaw Contract Color Frame",  php:2400, origin:"USA", local:true, durability:"EN 1307 Class 33", warranty:"15 yr", color:4, pattern:4, format:5, constr:4, brand:3, aesth:4, role:"Local Premium"},
 ];
 
-finalists.forEach(f=>{
-  f.total=f.color+f.pattern+f.format+f.constr+f.brand+f.aesth;
-  f.supplyPHP = Math.round(f.php * SQM_REQ);
-  f.workPHP   = WORK_PSM * SQM_REQ;
-  f.loadedPHP = f.supplyPHP + f.workPHP;
-  f.loadedEURinc = Math.round(f.loadedPHP * 0.0144);
-  f.loadedEURex  = Math.round(f.loadedPHP * 0.0144 / 1.12);
-  // legacy fields kept for scorecard/charts
-  f.totalPHP = f.loadedPHP;
-  f.totalEURinc = f.loadedEURinc;
-  f.totalEURex  = f.loadedEURex;
-});
+function recomputeFinalists(){
+  finalists.forEach(f=>{
+    f.total      = f.color+f.pattern+f.format+f.constr+f.brand+f.aesth;
+    f.supplyPHP  = Math.round(f.php * STATE.scopeSqm);
+    f.workPHP    = STATE.workPsm * STATE.scopeSqm;
+    f.loadedPHP  = f.supplyPHP + f.workPHP;
+    f.loadedEURinc = Math.round(f.loadedPHP * STATE.fxPhpEur);
+    f.loadedEURex  = Math.round(f.loadedPHP * STATE.fxPhpEur / (1+STATE.vatRate));
+    f.totalPHP     = f.loadedPHP;
+    f.totalEURinc  = f.loadedEURinc;
+    f.totalEURex   = f.loadedEURex;
+  });
+}
+recomputeFinalists();
 
 const desso = [
   ["AirMaster Sphere","B750-9505","500×500×6",5,4059,2435,"40%",31.31,""],
@@ -737,14 +794,14 @@ const alts = [
   ["Generic PP","China","JS Wallmatrix (PH)","660–1,300","Class 31 / 5 yr","1–2 wk","1.65M–3.25M","Back-of-house"],
 ];
 
-// Rent: 2,273.56 sqm × (₱750 or ₱725) × 12, +5% Y3, +5% Y5
-const rent = [
-  ["Y1",20462040,19779972,682068],
-  ["Y2",20462040,19779972,682068],
-  ["Y3 (+5%)",21485142,20768971,716171],
-  ["Y4",21485142,20768971,716171],
-  ["Y5 (+5%)",22559399,21807420,751979],
-];
+// Rent computed from STATE on render
+function buildRent(){
+  const c = STATE.rentYearTotals(STATE.rentCarpet);
+  const n = STATE.rentYearTotals(STATE.rentNoCarpet);
+  const labels = ["Y1","Y2","Y3 (+5%)","Y4","Y5 (+5%)"];
+  return labels.map((l,i)=>[l, Math.round(c[i]), Math.round(n[i]), Math.round(c[i]-n[i])]);
+}
+let rent = buildRent();
 
 const actions = [
   [1,"Counter Charles: reject 50% credit after Y3, propose ₱25/sqm/mo rent discount instead","Management","2026-04-10"],
@@ -812,10 +869,9 @@ let costChart, breakevenChart, radarChart, totalChart, altChart, rentChart;
 // - 'none'     : no offset (Dyninno 100%)
 // - 'discount' : monthly rent discount ₱25/sqm/mo × 990 × 60 mo w/ Y3+Y5 escalation = ₱1,545,143 over 5 yr
 // - 'credit'   : 50% of loaded capex credited against rent after Y3, NPV haircut -12% (2 yr delay, Y3+ only, conditional on staying)
-const COMP_DISCOUNT = 3548457;
 function getCompensation(f){
   if(currentScen==='none') return 0;
-  if(currentScen==='discount') return COMP_DISCOUNT;
+  if(currentScen==='discount') return STATE.rentDelta5yr;
   if(currentScen==='credit') return Math.round(f.loadedPHP * 0.5 * 0.88); // NPV haircut
   return 0;
 }
@@ -824,10 +880,11 @@ function recalcCost(){
   const tbody = document.querySelector('#costTable tbody');
   tbody.innerHTML='';
   const labels=[], vals=[], colors=[], surplusVals=[];
+  const rentDelta = STATE.rentDelta5yr;
   finalists.forEach((f,i)=>{
     const comp = getCompensation(f);
     const net = f.loadedPHP - comp;
-    const surplus = RENT_DELTA - net;
+    const surplus = rentDelta - net;
     const pill = surplus>=0 ? `<span class="pill ok">+₱${fmt(surplus)}</span>` : `<span class="pill bad">−₱${fmt(-surplus)}</span>`;
     const rowClass = i===0 ? 'row-primary' : '';
     const localPill = f.local ? '<span class="pill ok">LOCAL</span>' : '<span class="pill neutral">IMPORT</span>';
@@ -997,20 +1054,9 @@ function populateAll(){
       <td class="num">${r[3]}</td><td class="num">${fmt(r[4])}</td><td>${r[5]}</td><td>${rolePill}</td></tr>`;
   }).join('');
 
-  // Alts
-  document.getElementById('altBody').innerHTML = alts.map(r=>{
-    const isPrimary = r[7]==='LOCAL PIVOT';
-    const rp = isPrimary ? `<span class="pill accent">${r[7]}</span>`
-             : (r[7]==='Incumbent' || r[7]==='LOCAL ESG') ? `<span class="pill ok">${r[7]}</span>`
-             : r[7]==='Back-of-house' ? `<span class="pill bad">${r[7]}</span>`
-             : `<span class="pill neutral">${r[7]}</span>`;
-    return `<tr class="${isPrimary?'row-primary':''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td class="num">₱${r[3]}</td><td style="font-size:11px">${r[4]}</td><td>${r[5]}</td><td class="num">₱${r[6]}</td><td>${rp}</td></tr>`;
-  }).join('');
+  // Alts table — rendered by rebuildAltsTable() in renderAll()
 
-  // Rent
-  const rb = document.getElementById('rentBody');
-  rb.innerHTML = rent.map(r=>`<tr><td><b>${r[0]}</b></td><td class="num">₱${fmt(r[1])}</td><td class="num">₱${fmt(r[2])}</td><td class="num"><b>₱${fmt(r[3])}</b></td></tr>`).join('');
-  rb.innerHTML += `<tr style="background:var(--yellow-soft);font-weight:700"><td>5 YR TOTAL</td><td class="num">₱106,453,763</td><td class="num">₱102,905,306</td><td class="num">₱3,548,457</td></tr>`;
+  // Rent — rendered by rebuildRentTable() in renderAll()
 
   // Actions
   document.getElementById('actionBody').innerHTML = actions.map(a=>{
@@ -1020,9 +1066,154 @@ function populateAll(){
   document.getElementById('riskBody').innerHTML = risks.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
 }
 
+// ====== Reactive renderer ======
+function fmtM(n){ return (n/1e6).toFixed(2)+'M'; }
+function fmtSqm(n){ return n.toLocaleString('en-US',{maximumFractionDigits:2}); }
+
+function renderAll(){
+  recomputeFinalists();
+  rent = buildRent();
+  RENT_DELTA = STATE.rentDelta5yr;
+  COMP_DISCOUNT = STATE.rentDelta5yr;
+
+  const primary = finalists[0];
+  const netExposure = primary.loadedPHP - STATE.rentDelta5yr;
+  const recoveryPct = Math.round(100 * STATE.rentDelta5yr / primary.loadedPHP);
+  const rentInsightTotal = STATE.rent5yr;
+  const cusa = Math.round(STATE.officeSqm * 145 * 60);
+  const parking = 1650000;
+  const allIn = 130120000;
+
+  const bindings = {
+    officeSqm:   fmtSqm(STATE.officeSqm),
+    scopeSqm:    fmtSqm(STATE.scopeSqm),
+    wastePct:    STATE.wastePct,
+    workPsm:     fmt(STATE.workPsm),
+    deltaPsm:    STATE.deltaPsm,
+    rentCarpet:  STATE.rentCarpet,
+    rentNoCarpet: STATE.rentNoCarpet,
+    loadedPHP:   fmt(primary.loadedPHP),
+    loadedM:     fmtM(primary.loadedPHP),
+    loadedEURinc: fmt(primary.loadedEURinc),
+    loadedEURex:  fmt(primary.loadedEURex),
+    workTotal:   fmt(primary.workPHP),
+    workTotalM:  fmtM(primary.workPHP),
+    supplyTotal: fmt(primary.supplyPHP),
+    supplyTotalM: fmtM(primary.supplyPHP),
+    rentDelta:   fmt(STATE.rentDelta5yr),
+    rentDeltaM:  fmtM(STATE.rentDelta5yr),
+    netExposurePHP: fmt(netExposure),
+    netExposureM:   fmtM(netExposure),
+    netExposureEURex: fmt(Math.round(netExposure * STATE.fxPhpEur / (1+STATE.vatRate))),
+    recoveryPct: recoveryPct,
+    indentSqm:   fmt(Math.max(0, STATE.scopeSqm - 620)),
+    // Rent linkage table
+    y1c: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[0])),
+    y2c: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[1])),
+    y3c: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[2])),
+    y4c: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[3])),
+    y5c: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[4])),
+    y1n: fmt(Math.round(STATE.rentYearTotals(STATE.rentNoCarpet)[0])),
+    y2n: fmt(Math.round(STATE.rentYearTotals(STATE.rentNoCarpet)[1])),
+    y3n: fmt(Math.round(STATE.rentYearTotals(STATE.rentNoCarpet)[2])),
+    y4n: fmt(Math.round(STATE.rentYearTotals(STATE.rentNoCarpet)[3])),
+    y5n: fmt(Math.round(STATE.rentYearTotals(STATE.rentNoCarpet)[4])),
+    y1d: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[0]-STATE.rentYearTotals(STATE.rentNoCarpet)[0])),
+    y2d: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[1]-STATE.rentYearTotals(STATE.rentNoCarpet)[1])),
+    y3d: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[2]-STATE.rentYearTotals(STATE.rentNoCarpet)[2])),
+    y4d: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[3]-STATE.rentYearTotals(STATE.rentNoCarpet)[3])),
+    y5d: fmt(Math.round(STATE.rentYearTotals(STATE.rentCarpet)[4]-STATE.rentYearTotals(STATE.rentNoCarpet)[4])),
+    rent5yrC: fmt(Math.round(STATE.rent5yr)),
+    rent5yrN: fmt(Math.round(STATE.rent5yrNo)),
+    // Lease context proportions
+    cusa: fmt(cusa),
+    cusaPct: ((cusa/allIn)*100).toFixed(1),
+    rent5yrPct: ((STATE.rent5yr/allIn)*100).toFixed(1),
+    loadedPct: ((primary.loadedPHP/allIn)*100).toFixed(2),
+    netPct: ((netExposure/allIn)*100).toFixed(2),
+    deltaPct: ((STATE.rentDelta5yr/allIn)*100).toFixed(2),
+    otherCalc: fmt(Math.round(allIn - STATE.rent5yr - cusa - parking)),
+    otherPct: (((allIn - STATE.rent5yr - cusa - parking)/allIn)*100).toFixed(1),
+    // Work breakdown
+    workRemoveTotal: fmt(STATE.removePsm * STATE.scopeSqm),
+    workPrepTotal:   fmt(STATE.prepPsm * STATE.scopeSqm),
+    workInstallTotal: fmt(STATE.installPsm * STATE.scopeSqm),
+    workSubtotal:    fmt(STATE.workPsm * STATE.scopeSqm),
+    // Landlord comp options
+    optBNominal: fmt(Math.round(primary.loadedPHP * 0.5)),
+    optBEffective: fmt(Math.round(primary.loadedPHP * 0.5 * 0.88)),
+    optCNominal: fmt(Math.round(primary.loadedPHP * 0.4)),
+    netA: fmt(primary.loadedPHP - STATE.rentDelta5yr),
+    netB: fmt(primary.loadedPHP - Math.round(primary.loadedPHP * 0.5 * 0.88)),
+    netC: fmt(primary.loadedPHP - Math.round(primary.loadedPHP * 0.4)),
+    netAEUR: fmt(Math.round((primary.loadedPHP - STATE.rentDelta5yr) * STATE.fxPhpEur / (1+STATE.vatRate))),
+    netBEUR: fmt(Math.round((primary.loadedPHP - Math.round(primary.loadedPHP*0.5*0.88)) * STATE.fxPhpEur / (1+STATE.vatRate))),
+    netCEUR: fmt(Math.round((primary.loadedPHP - Math.round(primary.loadedPHP*0.4)) * STATE.fxPhpEur / (1+STATE.vatRate))),
+  };
+
+  document.querySelectorAll('[data-bind]').forEach(el=>{
+    const key = el.getAttribute('data-bind');
+    if(bindings[key]!==undefined) el.textContent = bindings[key];
+  });
+
+  // Re-render data tables that depend on scope
+  if(typeof rebuildRentTable==='function') rebuildRentTable();
+  if(typeof rebuildAltsTable==='function') rebuildAltsTable();
+  recalcCost();
+}
+
+// Wire input listeners
+function bindControls(){
+  const update = ()=>{
+    STATE.officeSqm  = parseFloat(document.getElementById('in-office').value) || STATE.officeSqm;
+    STATE.wastePct   = parseFloat(document.getElementById('in-waste').value) || 0;
+    STATE.rentCarpet = parseFloat(document.getElementById('in-rent-c').value) || STATE.rentCarpet;
+    STATE.rentNoCarpet = parseFloat(document.getElementById('in-rent-n').value) || STATE.rentNoCarpet;
+    STATE.workPsm    = parseFloat(document.getElementById('in-work').value) || STATE.workPsm;
+    renderAll();
+  };
+  ['in-office','in-waste','in-rent-c','in-rent-n','in-work'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', update);
+  });
+  document.getElementById('resetState').addEventListener('click', ()=>{
+    document.getElementById('in-office').value = 2273.56;
+    document.getElementById('in-waste').value = 10;
+    document.getElementById('in-rent-c').value = 750;
+    document.getElementById('in-rent-n').value = 725;
+    document.getElementById('in-work').value = 450;
+    update();
+  });
+}
+
+// Re-buildable tables (rent + alts)
+function rebuildRentTable(){
+  const rb = document.getElementById('rentBody');
+  if(!rb) return;
+  rb.innerHTML = rent.map(r=>`<tr><td><b>${r[0]}</b></td><td class="num">₱${fmt(r[1])}</td><td class="num">₱${fmt(r[2])}</td><td class="num"><b>₱${fmt(r[3])}</b></td></tr>`).join('');
+  rb.innerHTML += `<tr style="background:var(--yellow-soft);font-weight:700"><td>5 YR TOTAL</td><td class="num">₱${fmt(Math.round(STATE.rent5yr))}</td><td class="num">₱${fmt(Math.round(STATE.rent5yrNo))}</td><td class="num">₱${fmt(STATE.rentDelta5yr)}</td></tr>`;
+}
+function rebuildAltsTable(){
+  const ab = document.getElementById('altBody');
+  if(!ab) return;
+  ab.innerHTML = alts.map(r=>{
+    const isPrimary = r[7]==='LOCAL PIVOT';
+    const rp = isPrimary ? `<span class="pill accent">${r[7]}</span>`
+             : (r[7]==='Incumbent' || r[7]==='LOCAL ESG') ? `<span class="pill ok">${r[7]}</span>`
+             : r[7]==='Back-of-house' ? `<span class="pill bad">${r[7]}</span>`
+             : `<span class="pill neutral">${r[7]}</span>`;
+    // Recompute scope-dependent total range from price range string
+    const prange = r[3].replace(/,/g,'').split('–').map(parseFloat);
+    const lowM = ((prange[0]*STATE.scopeSqm)/1e6).toFixed(2);
+    const highM = ((prange[1]*STATE.scopeSqm)/1e6).toFixed(2);
+    const totalRange = `${lowM}M–${highM}M`;
+    return `<tr class="${isPrimary?'row-primary':''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td class="num">₱${r[3]}</td><td style="font-size:11px">${r[4]}</td><td>${r[5]}</td><td class="num">₱${totalRange}</td><td>${rp}</td></tr>`;
+  }).join('');
+}
+
 populateAll();
 initCharts();
-recalcCost();
+bindControls();
+renderAll();
 </script>
 </body>
 </html>
